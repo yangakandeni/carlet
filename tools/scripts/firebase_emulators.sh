@@ -1,0 +1,199 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+# Firebase Emulators helper for macOS/Linux (zsh/bash)
+# Usage:
+#   tools/firebase_emulators.sh start   # start in background, write PID/logs
+#   tools/firebase_emulators.sh stop    # stop background process
+#   tools/firebase_emulators.sh status  # show ports and process status
+#   tools/firebase_emulators.sh logs    # tail logs
+#   tools/firebase_emulators.sh save    # export emulator data to tools/emulator_data/
+
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+PROJECT_ROOT="${SCRIPT_DIR%/tools}"
+LOG_FILE="$SCRIPT_DIR/emulators.log"
+PID_FILE="$SCRIPT_DIR/emulators.pid"
+DATA_DIR="$SCRIPT_DIR/emulator_data"
+
+# Default project; override via env PROJECT_ID, or .firebaserc
+DEFAULT_PROJECT_ID="carlet-dev-6be6a"
+PROJECT_ID="${PROJECT_ID:-$DEFAULT_PROJECT_ID}"
+
+command -v firebase >/dev/null 2>&1 || {
+  echo "[ERR] firebase CLI not found. Install: npm i -g firebase-tools" >&2
+  exit 1
+}
+
+ensure_dirs() {
+  mkdir -p "$SCRIPT_DIR" "$DATA_DIR"
+}
+
+is_running() {
+  if [[ -f "$PID_FILE" ]]; then
+    local pid
+    pid="$(cat "$PID_FILE" 2>/dev/null || echo)"
+    if [[ -n "$pid" ]] && ps -p "$pid" >/dev/null 2>&1; then
+      return 0
+    fi
+  fi
+  return 1
+}
+
+ports_status() {
+  local -A port_names=(
+    [8085]="Firestore"
+    [9098]="Auth"
+    [9198]="Storage"
+    [4005]="Emulator UI"
+  )
+  local host="127.0.0.1"
+  
+  echo ""
+  echo "═══════════════════════════════════════════════════════════"
+  echo "  Firebase Emulators Status"
+  echo "═══════════════════════════════════════════════════════════"
+  
+  for p in 9098 8085 9198 4005; do
+    local status="●"
+    local color_start=""
+    local color_end=""
+    
+    # Check if port is listening (try nc first, fallback to lsof)
+    if nc -z "$host" "$p" 2>/dev/null || lsof -i :"$p" >/dev/null 2>&1; then
+      status="✓ RUNNING"
+      color_start="\033[0;32m"  # Green
+      color_end="\033[0m"
+    else
+      status="✗ STOPPED"
+      color_start="\033[0;31m"  # Red
+      color_end="\033[0m"
+    fi
+    
+    printf "  ${color_start}%-12s${color_end} http://%s:%-5s [%s]\n" \
+      "${port_names[$p]}" "$host" "$p" "$status"
+  done
+  
+  echo "═══════════════════════════════════════════════════════════"
+  echo ""
+}
+
+kill_port_processes() {
+  # Kill processes using Firebase emulator ports (from firebase.json)
+  local -A port_names=(
+    [8085]="Firestore"
+    [9098]="Auth"
+    [9198]="Storage"
+    [4005]="Emulator UI"
+  )
+  local killed=0
+  
+  echo "[INFO] Checking for processes on emulator ports..."
+  for p in 9098 8085 9198 4005; do
+    local pids
+    pids=$(lsof -ti :"$p" 2>/dev/null || true)
+    if [[ -n "$pids" ]]; then
+      echo "[INFO] ${port_names[$p]} (127.0.0.1:$p) is in use by PID(s): $pids - terminating..."
+      echo "$pids" | xargs kill -9 2>/dev/null || true
+      killed=1
+      sleep 0.5
+    fi
+  done
+  
+  if [[ $killed -eq 1 ]]; then
+    echo "[INFO] Cleaned up existing processes on emulator ports"
+    sleep 1
+  else
+    echo "[INFO] All emulator ports are free"
+  fi
+}
+
+start_emulators() {
+  if is_running; then
+    echo "[INFO] Emulators already running (PID $(cat "$PID_FILE"))"
+    exit 0
+  fi
+  ensure_dirs
+  
+  # Kill any processes on emulator ports before starting
+  kill_port_processes
+
+  # Start emulators; UI is controlled via firebase.json (ui.enabled: true)
+  local cmd=(firebase emulators:start --only auth,firestore,storage --project "$PROJECT_ID")
+  if [[ -d "$DATA_DIR" && -n "$(ls -A "$DATA_DIR" 2>/dev/null || true)" ]]; then
+    cmd+=(--import "$DATA_DIR")
+  fi
+
+  echo "[INFO] Starting Firebase emulators in background... (logs: $LOG_FILE)"
+  nohup bash -lc "cd '$PROJECT_ROOT' && ${cmd[*]}" >"$LOG_FILE" 2>&1 &
+  echo $! >"$PID_FILE"
+  sleep 3
+  echo "[INFO] PID $(cat "$PID_FILE")"
+  echo ""
+  echo "[INFO] Emulators starting up..."
+  echo "[INFO] View logs: ./tools/scripts/firebase_emulators.sh logs"
+  echo "[INFO] View UI: http://127.0.0.1:4005"
+  ports_status
+}
+
+stop_emulators() {
+  if ! is_running; then
+    echo "[INFO] Emulators are not running."
+    exit 0
+  fi
+  local pid
+  pid="$(cat "$PID_FILE")"
+  echo "[INFO] Stopping emulators (PID $pid)..."
+  kill "$pid" 2>/dev/null || true
+  # Graceful wait
+  for i in {1..20}; do
+    if ps -p "$pid" >/dev/null 2>&1; then
+      sleep 0.5
+    else
+      break
+    fi
+  done
+  if ps -p "$pid" >/dev/null 2>&1; then
+    echo "[WARN] Force killing PID $pid"
+    kill -9 "$pid" 2>/dev/null || true
+  fi
+  rm -f "$PID_FILE"
+  echo "[INFO] Stopped."
+}
+
+save_snapshot() {
+  echo "[INFO] Exporting emulator data to $DATA_DIR ..."
+  mkdir -p "$DATA_DIR"
+  firebase emulators:export "$DATA_DIR" --project "$PROJECT_ID"
+  echo "[INFO] Export complete."
+}
+
+tail_logs() {
+  if [[ -f "$LOG_FILE" ]]; then
+    tail -n +1 -f "$LOG_FILE"
+  else
+    echo "[INFO] No logs yet at $LOG_FILE"
+  fi
+}
+
+show_status() {
+  if is_running; then
+    echo "[INFO] Emulators are running (PID $(cat "$PID_FILE"))"
+  else
+    echo "[INFO] Emulators are stopped"
+  fi
+  ports_status
+}
+
+case "${1:-}" in
+  start) start_emulators ;;
+  stop) stop_emulators ;;
+  status) show_status ;;
+  logs) tail_logs ;;
+  save) save_snapshot ;;
+  *)
+    echo "Firebase Emulators helper"
+    echo "Usage: $0 {start|stop|status|logs|save}"
+    echo "Env: PROJECT_ID (default: $DEFAULT_PROJECT_ID)"
+    exit 1
+    ;;
+esac

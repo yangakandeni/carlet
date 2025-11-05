@@ -1,0 +1,36 @@
+# Flutter/Dart/Pub related
+.dart_tool/
+.packages
+pubspec.lock
+build/
+.flutter-plugins
+.flutter-plugins-dependencies
+.metadata
+
+# iOS
+ios/Flutter/Flutter.framework
+ios/Flutter/Flutter.podspec
+ios/Flutter/Generated.xcconfig
+ios/.generated/
+ios/Pods/
+ios/Runner.xcworkspace/
+
+# Android
+android/.gradle/
+android/local.properties
+android/**/GeneratedPluginRegistrant.java
+android/**/GeneratedPluginRegistrant.kt
+
+# macOS
+macos/Flutter/GeneratedPluginRegistrant.swift
+macos/Pods/
+
+# VS Code
+.vscode/
+
+# IntelliJ
+.idea/
+
+# Firebase secrets (to be added by developer)
+**/google-services.json
+**/GoogleService-Info.plist

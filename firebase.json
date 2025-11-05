@@ -1,0 +1,61 @@
+{
+  "firestore": {
+    "rules": "firestore.rules"
+  },
+  "storage": {
+    "rules": "storage.rules"
+  },
+  "emulators": {
+    "auth": {
+      "host": "127.0.0.1",
+      "port": 9098
+    },
+    "firestore": {
+      "host": "127.0.0.1",
+      "port": 8085
+    },
+    "storage": {
+      "host": "127.0.0.1",
+      "port": 9198
+    },
+    "ui": {
+      "enabled": true,
+      "host": "127.0.0.1",
+      "port": 4005
+    },
+    "functions": {
+      "port": 5002
+    },
+    "hub": { "port": 4401 },
+    "logging": { "port": 4501 },
+    "singleProjectMode": true
+  },
+  "flutter": {
+    "platforms": {
+      "android": {
+        "default": {
+          "projectId": "carlet-dev-6be6a",
+          "appId": "1:862334079277:android:f48925501dee6a4f68c3a4",
+          "fileOutput": "android/app/google-services.json"
+        }
+      },
+      "ios": {
+        "default": {
+          "projectId": "carlet-dev-6be6a",
+          "appId": "1:862334079277:ios:30812a71c8e811d568c3a4",
+          "uploadDebugSymbols": false,
+          "fileOutput": "ios/Runner/GoogleService-Info.plist"
+        }
+      },
+      "dart": {
+        "lib/firebase_options.dart": {
+          "projectId": "carlet-dev-6be6a",
+          "configurations": {
+            "android": "1:862334079277:android:f48925501dee6a4f68c3a4",
+            "ios": "1:862334079277:ios:30812a71c8e811d568c3a4"
+          }
+        }
+      }
+    }
+  }
+}

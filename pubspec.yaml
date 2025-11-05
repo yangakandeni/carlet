@@ -1,0 +1,45 @@
+name: carlet
+description: Notify car owners of headlights or urgent issues nearby.
+publish_to: 'none'
+
+version: 0.1.0+1
+
+environment:
+  sdk: ">=3.3.0 <4.0.0"
+
+dependencies:
+  flutter:
+    sdk: flutter
+  cupertino_icons: ^1.0.6
+
+  # Firebase
+  firebase_core: ^4.2.0
+  firebase_auth: ^6.1.1
+  cloud_firestore: ^6.0.3
+  firebase_storage: ^13.0.3
+  firebase_messaging: ^16.0.3
+
+  # Maps & Location
+  google_maps_flutter: ^2.7.0
+  geolocator: ^14.0.2
+
+  # Media & Utils
+  image_picker: ^1.1.2
+  provider: ^6.1.2
+  intl: ^0.20.2
+  uuid: ^4.4.0
+  url_launcher: ^6.3.0
+  
+  # Phone Authentication UI
+  intl_phone_field: ^3.2.0
+  pinput: ^5.0.2
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^6.0.0
+
+flutter:
+  uses-material-design: true
+  assets:
+    - assets/
