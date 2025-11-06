@@ -63,19 +63,45 @@ Ensure Firebase products are enabled: **Phone Authentication** (with reCAPTCHA f
 
 ## 4) Run the app
 
-```zsh
-# Normal run (production Firebase)
-flutter run -d ios
-flutter run -d android
+### Start Firebase Emulators (for development)
 
-# Use local Firebase Emulators (Auth/Firestore/Storage):
-# - Android emulators connect to host 10.0.2.2 automatically
-# - iOS simulator/macOS use localhost by default
-# - Override with EMULATOR_HOST to target a LAN IP for physical devices
-flutter run \
-  --dart-define=USE_EMULATORS=true \
-  --dart-define=EMULATOR_HOST=localhost
+```bash
+# Start all emulators (Auth, Firestore, Storage)
+./tools/scripts/firebase_emulators.sh start
+
+# Check status
+./tools/scripts/firebase_emulators.sh status
+
+# View logs
+./tools/scripts/firebase_emulators.sh logs
+
+# Stop emulators
+./tools/scripts/firebase_emulators.sh stop
 ```
+
+The emulators are configured to bind to `0.0.0.0` so they're accessible from:
+- **Local browser**: http://127.0.0.1:4005
+- **Android emulator**: http://10.0.2.2:4005
+- **iOS simulator**: http://127.0.0.1:4005
+
+### Run the Flutter app
+
+```bash
+# With Firebase Emulators (recommended for development)
+flutter run --dart-define=USE_EMULATORS=true --dart-define=EMULATOR_HOST=10.0.2.2
+
+# Production Firebase (requires real phone number & SMS)
+flutter run
+```
+
+### Testing Phone Authentication with Emulators
+
+When using Firebase Auth Emulator, you can test without real SMS:
+1. Enter any phone number in the app (e.g., +1 555 555 5555)
+2. The emulator will show the OTP code in the logs or UI
+3. Enter the code to sign in
+
+No real SMS is sent when using emulators!
 
 ## 5) Cloud Functions (push notifications)
 

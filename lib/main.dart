@@ -29,6 +29,9 @@ Future<void> main() async {
     options: DefaultFirebaseOptions.currentPlatform,
   );
 
+  // Connect to Firebase Emulators if USE_EMULATORS=true
+  await connectToFirebaseEmulators();
+
   FirebaseMessaging.onBackgroundMessage(firebaseMessagingBackgroundHandler);
 
   runApp(

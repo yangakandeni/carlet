@@ -131,7 +131,8 @@ start_emulators() {
   echo ""
   echo "[INFO] Emulators starting up..."
   echo "[INFO] View logs: ./tools/scripts/firebase_emulators.sh logs"
-  echo "[INFO] View UI: http://127.0.0.1:4005"
+  echo "[INFO] Local access: http://127.0.0.1:4005"
+  echo "[INFO] Android emulator access: http://10.0.2.2:4005"
   ports_status
 }
 
