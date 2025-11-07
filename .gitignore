@@ -21,6 +21,10 @@ android/local.properties
 android/**/GeneratedPluginRegistrant.java
 android/**/GeneratedPluginRegistrant.kt
 
+# iOS/macOS sensitive config (keep out of source control)
+ios/Runner/GoogleService-Info.plist
+macos/Runner/GoogleService-Info.plist
+
 # macOS
 macos/Flutter/GeneratedPluginRegistrant.swift
 macos/Pods/
