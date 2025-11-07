@@ -3,14 +3,27 @@ import 'dart:io' show Platform;
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_storage/firebase_storage.dart';
+import 'package:flutter/foundation.dart' show kDebugMode;
 
 // Compile-time flags:
-// - USE_EMULATORS=true to enable emulator connections
+// - USE_EMULATORS=true to explicitly enable emulator connections
 // - EMULATOR_HOST=<host> to override default host (localhost/10.0.2.2)
+// - APP_ENV=<ENV> can be used to select environment (DEV/STAGING/PROD)
 const bool kUseEmulators =
-    bool.fromEnvironment('USE_EMULATORS', defaultValue: false);
+  bool.fromEnvironment('USE_EMULATORS', defaultValue: false);
 const String kEmulatorHostEnv =
-    String.fromEnvironment('EMULATOR_HOST', defaultValue: '');
+  String.fromEnvironment('EMULATOR_HOST', defaultValue: '');
+const String kAppEnv = String.fromEnvironment('APP_ENV', defaultValue: '');
+
+// Decide whether to use emulators:
+// - If USE_EMULATORS was compiled-in true, honor that.
+// - If APP_ENV is set to DEV (via --dart-define APP_ENV=DEV) use emulators.
+// - If the app is running in debug mode (kDebugMode), use emulators.
+// This makes local development (debug runs or `APP_ENV=DEV`) automatically
+// connect to emulators while allowing explicit overrides via USE_EMULATORS.
+final bool kShouldUseEmulators = kUseEmulators ||
+  kAppEnv.toUpperCase() == 'DEV' ||
+  kDebugMode;
 
 String _defaultHost() {
   // On Android emulators, the host machine is 10.0.2.2
@@ -25,10 +38,10 @@ String get emulatorHost =>
 bool _connected = false;
 
 Future<void> connectToFirebaseEmulators() async {
-  print('[EMULATOR] USE_EMULATORS=$kUseEmulators, HOST=$emulatorHost');
+  print('[EMULATOR] USE_EMULATORS=$kUseEmulators, APP_ENV=$kAppEnv, kDebugMode=$kDebugMode, HOST=$emulatorHost');
 
-  if (_connected || !kUseEmulators) {
-    if (!kUseEmulators) {
+  if (_connected || !kShouldUseEmulators) {
+    if (!kShouldUseEmulators) {
       print('[EMULATOR] Emulators disabled - using production Firebase');
     }
     return;

@@ -26,8 +26,12 @@
     "functions": {
       "port": 5002
     },
-    "hub": { "port": 4401 },
-    "logging": { "port": 4501 },
+    "hub": {
+      "port": 4401
+    },
+    "logging": {
+      "port": 4501
+    },
     "singleProjectMode": true
   },
   "flutter": {
