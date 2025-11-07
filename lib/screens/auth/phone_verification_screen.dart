@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 // ignore: depend_on_referenced_packages
 import 'package:intl_phone_field/intl_phone_field.dart';
@@ -8,9 +9,13 @@ import 'package:pinput/pinput.dart';
 
 import 'package:carlet/services/auth_service.dart';
 import 'package:carlet/screens/home/home_screen.dart';
+import 'package:carlet/screens/auth/onboarding_screen.dart';
+import 'package:carlet/utils/phone_utils.dart';
 
 class PhoneVerificationScreen extends StatefulWidget {
-  const PhoneVerificationScreen({super.key});
+  final String? initialPhone;
+
+  const PhoneVerificationScreen({super.key, this.initialPhone});
 
   @override
   State<PhoneVerificationScreen> createState() =>
@@ -18,6 +23,20 @@ class PhoneVerificationScreen extends StatefulWidget {
 }
 
 class _PhoneVerificationScreenState extends State<PhoneVerificationScreen> {
+  @override
+  void initState() {
+    super.initState();
+    // If a test or caller provided an initial phone, prefill the controller
+    // and the internal complete number so tests can avoid typing into the
+    // IntlPhoneField.
+    if (widget.initialPhone != null && widget.initialPhone!.isNotEmpty) {
+      _phoneController.text = widget.initialPhone!;
+      // Try to pre-normalize the provided phone for display and ease of
+      // testing. Fall back to the raw value if normalization fails.
+      _completePhoneNumber = normalizePhone(widget.initialPhone!) ?? widget.initialPhone!;
+    }
+  }
+
   final _phoneController = TextEditingController();
   final _pinController = TextEditingController();
   String? _verificationId;
@@ -48,8 +67,20 @@ class _PhoneVerificationScreenState extends State<PhoneVerificationScreen> {
     });
   }
 
+  // Phone normalization moved to lib/utils/phone_utils.dart
+
   Future<void> _sendCode() async {
-    if (_completePhoneNumber.isEmpty) {
+    // Prefer the controller text if user typed/pasted a number; fall back to
+    // the intl_phone_field's completeNumber. Normalize inputs like:
+    //  - 072145778
+    //  - 27721457788
+    //  - 721457788
+    // into E.164 (+27...) for Firebase.
+    final raw = (_phoneController.text.trim().isNotEmpty)
+        ? _phoneController.text.trim()
+        : _completePhoneNumber;
+  final normalized = normalizePhone(raw);
+    if (normalized == null) {
       setState(() => _error = 'Please enter a valid phone number');
       return;
     }
@@ -59,9 +90,11 @@ class _PhoneVerificationScreenState extends State<PhoneVerificationScreen> {
       _error = null;
     });
     try {
-      final id = await context
-          .read<AuthService>()
-          .startPhoneVerification(_completePhoneNumber);
+      // store normalized number for later display
+      _completePhoneNumber = normalized;
+      final id = await context.read<AuthService>().startPhoneVerification(
+            _completePhoneNumber,
+          );
       setState(() {
         _verificationId = id;
         _codeSent = true;
@@ -81,9 +114,16 @@ class _PhoneVerificationScreenState extends State<PhoneVerificationScreen> {
       _error = null;
     });
     try {
-      await context.read<AuthService>().confirmSmsCode(_verificationId!, code);
+      final appUser = await context
+          .read<AuthService>()
+          .confirmSmsCode(_verificationId!, code);
       if (!mounted) return;
-      Navigator.pushReplacementNamed(context, HomeScreen.routeName);
+      // If onboarding not completed, navigate to onboarding screen first
+      if (appUser == null || appUser.onboardingComplete != true) {
+        Navigator.pushReplacementNamed(context, OnboardingScreen.routeName);
+      } else {
+        Navigator.pushReplacementNamed(context, HomeScreen.routeName);
+      }
     } catch (e) {
       setState(() => _error = e.toString());
       _pinController.clear();
@@ -168,6 +208,13 @@ class _PhoneVerificationScreenState extends State<PhoneVerificationScreen> {
                   prefixIcon: const Icon(Icons.phone),
                 ),
                 initialCountryCode: 'ZA',
+                disableLengthCheck: true,
+                inputFormatters: [
+                  FilteringTextInputFormatter.digitsOnly,
+                  // Allow either local 10-digit numbers (starting with 0) or
+                  // international without plus (e.g. 277...) which is 11 digits
+                  LengthLimitingTextInputFormatter(11),
+                ],
                 onChanged: (phone) {
                   // Store complete number for Firebase (without modifying controller)
                   _completePhoneNumber = phone.completeNumber;
@@ -192,11 +239,6 @@ class _PhoneVerificationScreenState extends State<PhoneVerificationScreen> {
                 ),
               ),
             ] else ...[
-              Icon(
-                Icons.sms_outlined,
-                size: 80,
-                color: theme.colorScheme.primary,
-              ),
               const SizedBox(height: 24),
               Text(
                 'Enter verification code',

@@ -27,11 +27,16 @@ class _SplashScreenState extends State<SplashScreen> {
       final auth = context.read<AuthService>();
       if (!mounted) return;
       if (auth.currentUser != null) {
-        final userId = auth.currentUser!.id;
+        final user = auth.currentUser!;
+        final userId = user.id;
         // Best-effort updates (no await to avoid blocking navigation)
         context.read<MessagingService>().ensurePermissionAndToken(userId);
         context.read<LocationService>().updateUserLocation(userId);
-        Navigator.of(context).pushReplacementNamed(HomeScreen.routeName);
+        if (user.onboardingComplete == true) {
+          Navigator.of(context).pushReplacementNamed(HomeScreen.routeName);
+        } else {
+          Navigator.of(context).pushReplacementNamed('/onboarding');
+        }
       } else {
         Navigator.of(context).pushReplacementNamed(LoginScreen.routeName);
       }
