@@ -25,12 +25,23 @@ class _FeedScreenState extends State<FeedScreen> {
   }
 
   Future<void> _loadMyLocation() async {
-    final pos = await context.read<LocationService>().getCurrentPosition();
-    if (!mounted) return;
-    setState(() {
-      _myLat = pos?.latitude;
-      _myLng = pos?.longitude;
-    });
+    try {
+      final pos = await context.read<LocationService>().getCurrentPosition();
+      if (!mounted) return;
+      setState(() {
+        _myLat = pos?.latitude;
+        _myLng = pos?.longitude;
+      });
+    } catch (e) {
+      // Silently fail if location can't be obtained
+      // The app will still work, just without distance calculations
+      if (mounted) {
+        setState(() {
+          _myLat = null;
+          _myLng = null;
+        });
+      }
+    }
   }
 
   @override

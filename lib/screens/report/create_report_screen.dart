@@ -37,8 +37,21 @@ class _CreateReportScreenState extends State<CreateReportScreen> {
     });
     try {
       final auth = context.read<AuthService>();
-      final loc = await context.read<LocationService>().getCurrentPosition();
-      if (loc == null) throw Exception('Location permission denied.');
+      final locationService = context.read<LocationService>();
+
+      // Check permission first and get detailed error if denied
+      final permissionResult = await locationService.checkPermission();
+      if (!permissionResult.granted) {
+        throw Exception(
+            permissionResult.message ?? 'Location permission denied.');
+      }
+
+      // Now get the actual location
+      final loc = await locationService.getCurrentPosition();
+      if (loc == null) {
+        throw Exception('Unable to get your location. Please try again.');
+      }
+
       final file = _photo != null ? File(_photo!.path) : null;
       await ReportService().createReport(
         reporterId: auth.currentUser!.id,
