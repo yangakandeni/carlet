@@ -64,7 +64,7 @@ void main() {
     testWidgets('happy path: submits and navigates to home',
         (WidgetTester tester) async {
       final mockAuth = MockAuthService();
-      mockAuth.fakeUser = AppUser(id: 'u1', onboardingComplete: false);
+      mockAuth.fakeUser = const AppUser(id: 'u1', onboardingComplete: false);
 
       await tester.pumpWidget(
         ChangeNotifierProvider<AuthService>.value(
@@ -79,8 +79,8 @@ void main() {
         ),
       );
 
-      // Ensure fields are present
-      expect(find.byType(TextFormField), findsNWidgets(5));
+  // Ensure fields are present (name, make, model, color, plate)
+  expect(find.byType(TextFormField), findsNWidgets(5));
 
       // Fill fields
       await tester.enterText(find.widgetWithText(TextFormField, 'Full name'), 'Alice');
@@ -102,7 +102,7 @@ void main() {
     testWidgets('blocked case: already onboarded redirects to home',
         (WidgetTester tester) async {
       final mockAuth = MockAuthService();
-      mockAuth.fakeUser = AppUser(id: 'u2', onboardingComplete: true);
+      mockAuth.fakeUser = const AppUser(id: 'u2', onboardingComplete: true);
 
       await tester.pumpWidget(
         ChangeNotifierProvider<AuthService>.value(
@@ -127,7 +127,7 @@ void main() {
 
     testWidgets('error path: shows error when write fails', (WidgetTester tester) async {
       final mockAuth = MockAuthService();
-      mockAuth.fakeUser = AppUser(id: 'u3', onboardingComplete: false);
+      mockAuth.fakeUser = const AppUser(id: 'u3', onboardingComplete: false);
       mockAuth.simulateFailure = true;
 
       await tester.pumpWidget(
@@ -157,7 +157,7 @@ void main() {
 
       // Should not navigate to home and should show error container
       expect(find.text('Home'), findsNothing);
-      expect(find.textContaining('Simulated write failure'), findsOneWidget);
+  expect(find.textContaining('Unable to save your details'), findsOneWidget);
     });
   });
 }

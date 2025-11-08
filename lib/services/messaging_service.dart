@@ -38,10 +38,14 @@ class MessagingService {
     FirebaseMessaging.onMessage.listen((RemoteMessage message) {
       final notif = message.notification;
       if (notif != null) {
+        // Use the provided ScaffoldMessengerState to show a snackbar
+        // instead of capturing a BuildContext across asynchronous
+        // boundaries which trips the analyzer lint.
         messengerKey.currentState?.showSnackBar(
           SnackBar(
-            content: Text('${notif.title ?? 'New alert'}: ${notif.body ?? ''}'),
-            duration: const Duration(seconds: 4),
+            content: Text(
+              '${notif.title ?? 'New alert'}: ${notif.body ?? ''}',
+            ),
           ),
         );
       }

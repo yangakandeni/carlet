@@ -29,6 +29,16 @@ class ReportCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    String? deletionHint() {
+      if (report.status != 'resolved' || report.expireAt == null) return null;
+      final now = DateTime.now().toUtc();
+      final diff = report.expireAt!.toUtc().difference(now);
+      if (diff.inSeconds <= 0) return 'Will be deleted soon';
+      if (diff.inMinutes < 1) return 'Will be deleted in <1m';
+      if (diff.inMinutes < 60) return 'Will be deleted in ${diff.inMinutes}m';
+      final hours = diff.inHours;
+      return 'Will be deleted in ${hours}h';
+    }
     return Card(
       clipBehavior: Clip.antiAlias,
       child: Column(
@@ -117,13 +127,23 @@ class ReportCard extends StatelessWidget {
                   ),
                 ),
                 const SizedBox(height: 8),
-                if (onResolve != null)
+                if (onResolve != null && report.status == 'open')
                   Align(
                     alignment: Alignment.centerRight,
                     child: FilledButton.icon(
                       onPressed: onResolve,
                       icon: const Icon(Icons.check_circle_outline),
                       label: const Text('Mark resolved'),
+                    ),
+                  ),
+                // Show a small hint when the report has been resolved and an
+                // expiry is known.
+                if (report.status == 'resolved' && report.expireAt != null)
+                  Padding(
+                    padding: const EdgeInsets.only(top: 8.0),
+                    child: Text(
+                      deletionHint() ?? '',
+                      style: theme.textTheme.bodySmall,
                     ),
                   ),
               ],

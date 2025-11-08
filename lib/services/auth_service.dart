@@ -118,7 +118,9 @@ class AuthService extends ChangeNotifier {
       'carMake': carMake,
       'carModel': carModel,
       'carColor': carColor,
-      'carPlate': carPlate,
+      // Normalize license plate to uppercase without spaces to match
+      // how reports store licensePlate (normalized in ReportService).
+      'carPlate': carPlate.toUpperCase().replaceAll(' ', ''),
       'onboardingComplete': true,
     }, SetOptions(merge: true));
   }

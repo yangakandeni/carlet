@@ -1,3 +1,5 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
+
 class Report {
   final String id;
   final String reporterId;
@@ -8,6 +10,8 @@ class Report {
   final String? message;
   final String status; // 'open' | 'resolved'
   final DateTime timestamp;
+  final DateTime? resolvedAt;
+  final DateTime? expireAt;
   final bool anonymous;
 
   const Report({
@@ -17,25 +21,26 @@ class Report {
     required this.lng,
     required this.status,
     required this.timestamp,
+    this.resolvedAt,
+    this.expireAt,
     this.photoUrl,
     this.licensePlate,
     this.message,
     this.anonymous = false,
   });
-
-  Map<String, dynamic> toMap() => {
-        'reporterId': reporterId,
-        'photoUrl': photoUrl,
-        'location': {'lat': lat, 'lng': lng},
-        'licensePlate': licensePlate,
-        'message': message,
-        'status': status,
-        'timestamp': timestamp.toIso8601String(),
-        'anonymous': anonymous,
-      };
+  
 
   factory Report.fromMap(String id, Map<String, dynamic> map) {
     final loc = map['location'] as Map<String, dynamic>?;
+    DateTime? parseDate(dynamic v) {
+      if (v == null) return null;
+      if (v is DateTime) return v;
+      if (v is Timestamp) return v.toDate().toUtc();
+      if (v is String) return DateTime.tryParse(v)?.toUtc();
+      if (v is num) return DateTime.fromMillisecondsSinceEpoch(v.toInt(), isUtc: true);
+      return null;
+    }
+
     return Report(
       id: id,
       reporterId: map['reporterId'] as String,
@@ -49,7 +54,24 @@ class Report {
           DateTime.fromMillisecondsSinceEpoch(
               (map['timestamp'] is num) ? (map['timestamp'] as num).toInt() : 0,
               isUtc: true),
+      resolvedAt: parseDate(map['resolvedAt']),
+      expireAt: parseDate(map['expireAt']),
       anonymous: (map['anonymous'] as bool?) ?? false,
     );
+  }
+  Map<String, dynamic> toMap() {
+    final m = <String, dynamic>{
+      'reporterId': reporterId,
+      'photoUrl': photoUrl,
+      'location': {'lat': lat, 'lng': lng},
+      'licensePlate': licensePlate,
+      'message': message,
+      'status': status,
+      'timestamp': timestamp.toIso8601String(),
+      'anonymous': anonymous,
+    };
+    if (resolvedAt != null) m['resolvedAt'] = resolvedAt!.toIso8601String();
+    if (expireAt != null) m['expireAt'] = expireAt!.toIso8601String();
+    return m;
   }
 }

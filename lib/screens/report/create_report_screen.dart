@@ -7,10 +7,24 @@ import 'package:provider/provider.dart';
 import 'package:carlet/services/auth_service.dart';
 import 'package:carlet/services/location_service.dart';
 import 'package:carlet/services/report_service.dart';
+import 'package:carlet/utils/snackbar.dart';
 
 class CreateReportScreen extends StatefulWidget {
   static const routeName = '/report';
-  const CreateReportScreen({super.key});
+  /// Optional callback used for creating a report. If not provided the
+  /// default [ReportService.createReport] will be used. This is primarily
+  /// here to make the screen testable without hitting Firebase.
+  final Future<String> Function({
+    required String reporterId,
+    required double lat,
+    required double lng,
+    String? licensePlate,
+    String? message,
+    File? photoFile,
+    bool anonymous,
+  })? onCreateReport;
+
+  const CreateReportScreen({super.key, this.onCreateReport});
 
   @override
   State<CreateReportScreen> createState() => _CreateReportScreenState();
@@ -53,22 +67,36 @@ class _CreateReportScreenState extends State<CreateReportScreen> {
       }
 
       final file = _photo != null ? File(_photo!.path) : null;
-      await ReportService().createReport(
-        reporterId: auth.currentUser!.id,
-        lat: loc.latitude,
-        lng: loc.longitude,
-        licensePlate: _plate.text.trim(),
-        message: _message.text.trim(),
-        photoFile: file,
-        anonymous: _anonymous,
-      );
+      final createFn = widget.onCreateReport;
+      if (createFn != null) {
+        await createFn(
+          reporterId: auth.currentUser!.id,
+          lat: loc.latitude,
+          lng: loc.longitude,
+          licensePlate: _plate.text.trim(),
+          message: _message.text.trim(),
+          photoFile: file,
+          anonymous: _anonymous,
+        );
+      } else {
+        await ReportService().createReport(
+          reporterId: auth.currentUser!.id,
+          lat: loc.latitude,
+          lng: loc.longitude,
+          licensePlate: _plate.text.trim(),
+          message: _message.text.trim(),
+          photoFile: file,
+          anonymous: _anonymous,
+        );
+      }
       if (!mounted) return;
-      Navigator.pop(context);
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Report posted.')),
-      );
+  // Close the screen and signal success to the caller so it can show
+  // feedback when it's safe to modify the navigator.
+  Navigator.pop(context, true);
     } catch (e) {
-      setState(() => _error = e.toString());
+      final friendly = 'Unable to post your report. Please try again.';
+      AppSnackbar.showError(context, friendly);
+      setState(() => _error = friendly);
     } finally {
       setState(() => _loading = false);
     }

@@ -6,6 +6,7 @@ import 'package:carlet/services/auth_service.dart';
 import 'package:carlet/services/location_service.dart';
 import 'package:carlet/services/report_service.dart';
 import 'package:carlet/widgets/report_card.dart';
+import 'package:carlet/utils/snackbar.dart';
 
 class FeedScreen extends StatefulWidget {
   const FeedScreen({super.key});
@@ -73,13 +74,12 @@ class _FeedScreenState extends State<FeedScreen> {
               report: r,
               myLat: _myLat,
               myLng: _myLng,
-              onResolve: canResolve
+                  onResolve: canResolve
                   ? () async {
                       await reportService.markResolved(r.id);
                       if (!context.mounted) return;
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(content: Text('Marked as resolved.')),
-                      );
+                      // show success flushbar
+                      AppSnackbar.showSuccess(context, 'Marked as resolved.');
                     }
                   : null,
             );

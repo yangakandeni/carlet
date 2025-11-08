@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:provider/provider.dart';
+import 'package:carlet/utils/snackbar.dart';
 
 import 'package:carlet/screens/feed/feed_screen.dart';
 import 'package:carlet/screens/map/map_screen.dart';
@@ -24,11 +25,8 @@ class _HomeScreenState extends State<HomeScreen> {
     FirebaseMessaging.onMessage.listen((message) {
       final notif = message.notification;
       if (notif != null && mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-              content:
-                  Text('${notif.title ?? 'New alert'}: ${notif.body ?? ''}')),
-        );
+        AppSnackbar.showInfo(
+            context, '${notif.title ?? 'New alert'}: ${notif.body ?? ''}');
       }
     });
   }
@@ -54,8 +52,23 @@ class _HomeScreenState extends State<HomeScreen> {
       ),
       body: tabs[_tab],
       floatingActionButton: FloatingActionButton.extended(
-        onPressed: () =>
-            Navigator.pushNamed(context, CreateReportScreen.routeName),
+        onPressed: () async {
+          // Capture the navigator synchronously so we don't reference
+          // `context` across an `await` which trips analyzer lint.
+          final navigator = Navigator.of(context);
+          final result = await navigator.pushNamed(
+            CreateReportScreen.routeName,
+          );
+          // Ensure widget still mounted before using context after an await.
+          if (!mounted) return;
+          // If the create screen signalled success, show feedback now
+          if (result == true) {
+            // Safe here because we validated `mounted` above; suppress
+            // the lint about using BuildContext across async gaps.
+            // ignore: use_build_context_synchronously
+            AppSnackbar.showSuccess(context, 'Report posted.');
+          }
+        },
         icon: const Icon(Icons.report),
         label: const Text('Report car'),
       ),

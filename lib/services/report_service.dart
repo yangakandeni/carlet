@@ -63,9 +63,16 @@ class ReportService {
   }
 
   Future<void> markResolved(String reportId) async {
-    await _db
-        .collection('reports')
-        .doc(reportId)
-        .update({'status': 'resolved'});
+    final docRef = _db.collection('reports').doc(reportId);
+    final now = DateTime.now().toUtc();
+    // Set status to resolved and add timestamps so a backend TTL policy or
+    // Cloud Function can remove the document after 30 minutes. Firestore now
+    // supports TTL policies configured in the console; set `expireAt` to the
+    // desired deletion time to enable TTL deletion if configured.
+    await docRef.update({
+      'status': 'resolved',
+      'resolvedAt': now.toIso8601String(),
+      'expireAt': Timestamp.fromDate(now.add(const Duration(minutes: 30))),
+    });
   }
 }

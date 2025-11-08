@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
 import 'package:carlet/services/auth_service.dart';
+import 'package:carlet/utils/snackbar.dart';
 import 'package:carlet/screens/home/home_screen.dart';
 
 class OnboardingScreen extends StatefulWidget {
@@ -66,7 +67,10 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
       if (!mounted) return;
       Navigator.pushReplacementNamed(context, HomeScreen.routeName);
     } catch (e) {
-      setState(() => _error = e.toString());
+      final friendly = 'Unable to save your details. Please try again.';
+      // show prominent feedback and also keep inline error area populated
+      if (mounted) AppSnackbar.showError(context, friendly);
+      setState(() => _error = friendly);
     } finally {
       if (mounted) setState(() => _loading = false);
     }
@@ -110,6 +114,15 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                 decoration: const InputDecoration(labelText: 'Vehicle model'),
                 validator: (v) => (v == null || v.trim().isEmpty)
                     ? 'Please enter the vehicle model'
+                    : null,
+                textInputAction: TextInputAction.next,
+              ),
+              const SizedBox(height: 12),
+              TextFormField(
+                controller: _colorCtrl,
+                decoration: const InputDecoration(labelText: 'Color'),
+                validator: (v) => (v == null || v.trim().isEmpty)
+                    ? 'Please enter the vehicle color'
                     : null,
                 textInputAction: TextInputAction.next,
               ),

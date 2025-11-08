@@ -38,3 +38,6 @@ macos/Pods/
 # Firebase secrets (to be added by developer)
 **/google-services.json
 **/GoogleService-Info.plist
+
+# Other
+node_modules/

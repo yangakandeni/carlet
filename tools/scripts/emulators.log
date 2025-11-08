@@ -27,8 +27,28 @@ WARNING: sun.misc.Unsafe::arrayBaseOffset will be removed in a future release
 
 Issues? Report them at https://github.com/firebase/firebase-tools/issues and attach the *-debug.log files.
  
-i  To verify the phone number +27717662280, use the code 615389.
-i  To verify the phone number +27717662280, use the code 248914.
-i  To verify the phone number +27717662280, use the code 412303.
-i  To verify the phone number +27717662280, use the code 839320.
-i  To verify the phone number +27717662280, use the code 064294.
+i  To verify the phone number +27717662280, use the code 632009.
+i  firestore: Change detected, updating rules...
+⚠  ../../firestore.rules:95:91 - WARNING Invalid function name: toLowerCase.
+⚠  ../../firestore.rules:95:135 - WARNING Invalid function name: toLowerCase.
+✔  firestore: Rules updated.
+i  firestore: Change detected, updating rules...
+⚠  ../../firestore.rules:95:91 - WARNING Invalid function name: toLowerCase.
+⚠  ../../firestore.rules:95:135 - WARNING Invalid function name: toLowerCase.
+✔  firestore: Rules updated.
+i  To verify the phone number +27785206473, use the code 857085.
+i  firestore: Change detected, updating rules...
+⚠  ../../firestore.rules:97:94 - WARNING Invalid function name: toLowerCase.
+⚠  ../../firestore.rules:97:138 - WARNING Invalid function name: toLowerCase.
+✔  firestore: Rules updated.
+i  firestore: Change detected, updating rules...
+i  firestore: Change detected, updating rules...
+⚠  ../../firestore.rules:97:94 - WARNING Invalid function name: toLowerCase.
+⚠  ../../firestore.rules:97:138 - WARNING Invalid function name: toLowerCase.
+✔  firestore: Rules updated.
+⚠  ../../firestore.rules:97:94 - WARNING Invalid function name: toLowerCase.
+⚠  ../../firestore.rules:97:138 - WARNING Invalid function name: toLowerCase.
+✔  firestore: Rules updated.
+i  To verify the phone number +277176665555, use the code 228200.
+i  To verify the phone number +27717662280, use the code 488539.
+i  To verify the phone number +27717662280, use the code 711524.

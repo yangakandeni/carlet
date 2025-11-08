@@ -3,6 +3,8 @@ const { logger } = require('firebase-functions');
 const admin = require('firebase-admin');
 admin.initializeApp();
 
+const { onSchedule } = require('firebase-functions/v2/scheduler');
+
 function haversineDistance(lat1, lon1, lat2, lon2) {
   function toRad(x) { return x * Math.PI / 180; }
   const R = 6371e3; // meters
@@ -100,4 +102,37 @@ exports.notifyOnReportResolved = onDocumentUpdated('reports/{reportId}', async (
       status: 'resolved',
     },
   });
+});
+
+// Scheduled cleanup: delete resolved reports whose `expireAt` timestamp is
+// in the past. Runs every 5 minutes. Requires `expireAt` to be a Firestore
+// Timestamp field on the document (see ReportService.markResolved).
+exports.cleanupResolvedReports = onSchedule('every 5 minutes', async (event) => {
+  const db = admin.firestore();
+  const now = admin.firestore.Timestamp.now();
+  try {
+    const q = db.collection('reports')
+      .where('status', '==', 'resolved')
+      .where('expireAt', '<=', now)
+      .limit(1000);
+    const snap = await q.get();
+    if (snap.empty) {
+      logger.info('No resolved reports to cleanup');
+      return;
+    }
+    const docs = snap.docs;
+    // Delete in batches of 500
+    const chunkSize = 500;
+    let deleted = 0;
+    for (let i = 0; i < docs.length; i += chunkSize) {
+      const chunk = docs.slice(i, i + chunkSize);
+      const batch = db.batch();
+      chunk.forEach((d) => batch.delete(d.ref));
+      await batch.commit();
+      deleted += chunk.length;
+    }
+    logger.info(`Deleted ${deleted} resolved reports`);
+  } catch (err) {
+    logger.error('Error cleaning up resolved reports', err);
+  }
 });

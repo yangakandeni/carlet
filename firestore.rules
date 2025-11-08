@@ -1,9 +1,125 @@
 rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
-    // DEVELOPMENT ONLY: Allow all reads/writes. Replace before production.
+    // Users collection: allow authenticated users to read their own doc and
+    // create/update it. Once `onboardingComplete` is set to true on the
+    // existing document, vehicle fields become immutable.
+    match /users/{userId} {
+      allow read: if request.auth != null;
+
+      // Create: authenticated user may create their own document. If the
+      // client sets onboardingComplete=true on create, require vehicle fields
+      // to be present and non-empty. Avoid use of keys().hasAny/hasAll to
+      // reduce rule evaluation complexity.
+      allow create: if request.auth != null && request.auth.uid == userId && (
+        // If onboardingComplete is not being set to true on create, allow.
+        !(request.resource.data.onboardingComplete == true)
+        ||
+        // If onboardingComplete is true on create, require all vehicle fields
+        (request.resource.data.onboardingComplete == true &&
+          request.resource.data.carMake is string && request.resource.data.carMake != '' &&
+          request.resource.data.carModel is string && request.resource.data.carModel != '' &&
+          request.resource.data.carColor is string && request.resource.data.carColor != '' &&
+          request.resource.data.carPlate is string && request.resource.data.carPlate != ''
+        )
+      );
+
+      // Update: authenticated user may update their own document with
+      // constraints around onboardingComplete and vehicle fields.
+      allow update: if request.auth != null && request.auth.uid == userId && (
+        // Case A: onboarding was already completed previously -> vehicle
+        // fields must not change and onboardingComplete must remain true.
+        (resource.data.onboardingComplete == true &&
+          // If the request includes a new value for a vehicle field, it
+          // must equal the existing value. Accessing a missing field will
+          // yield null, so we allow null (meaning not present) or equality.
+          (request.resource.data.carMake == resource.data.carMake || request.resource.data.carMake == null) &&
+          (request.resource.data.carModel == resource.data.carModel || request.resource.data.carModel == null) &&
+          (request.resource.data.carColor == resource.data.carColor || request.resource.data.carColor == null) &&
+          (request.resource.data.carPlate == resource.data.carPlate || request.resource.data.carPlate == null) &&
+          // Ensure onboardingComplete is not being turned off
+          (request.resource.data.onboardingComplete == resource.data.onboardingComplete || request.resource.data.onboardingComplete == null)
+        )
+        ||
+        // Case B: onboarding was NOT completed previously -> allow updates,
+        // but if the client is setting onboardingComplete=true in this
+        // update, require vehicle fields to be present and non-empty.
+        (resource.data.onboardingComplete != true && (
+          // If onboardingComplete is not being set to true in this
+          // update, allow the update. Otherwise, require vehicle fields.
+          !(request.resource.data.onboardingComplete == true)
+          ||
+          (request.resource.data.onboardingComplete == true &&
+            request.resource.data.carMake is string && request.resource.data.carMake != '' &&
+            request.resource.data.carModel is string && request.resource.data.carModel != '' &&
+            request.resource.data.carColor is string && request.resource.data.carColor != '' &&
+            request.resource.data.carPlate is string && request.resource.data.carPlate != ''
+          )
+        ))
+      );
+
+      // For safety do not allow client-side deletes
+      allow delete: if false;
+    }
+
+    // Fallback: allow reads but deny writes for other documents by default.
+    // Adjust rules below to open more access where necessary (e.g. reports
+    // or other collections) with least privilege in mind.
+    // Reports collection: allow authenticated users to create reports. Allow
+    // vehicle owners (whose `users/{uid}.carPlate` matches the report's
+    // `licensePlate`) to mark a report as resolved.
+    match /reports/{reportId} {
+      // Public feed
+      allow read: if true;
+
+      // Create: authenticated user can create a report. Validate minimal
+      // required fields and basic types. Require reporterId == auth.uid and
+      // initial status to be 'open'.
+      allow create: if request.auth != null &&
+        request.resource.data.reporterId == request.auth.uid &&
+        request.resource.data.keys().hasAll(['reporterId','location','status','timestamp']) &&
+        (request.resource.data.location.lat is number) &&
+        (request.resource.data.location.lng is number) &&
+        request.resource.data.status == 'open';
+
+      // Update: only allow the vehicle owner to change status to 'resolved'.
+      // Owner is determined by comparing the user's stored carPlate to the
+      // report's licensePlate. Also ensure no other fields are modified in
+      // the same update.
+      allow update: if request.auth != null && (
+        // Owner condition: user's carPlate exists and matches report licensePlate
+        (
+          get(/databases/$(database)/documents/users/$(request.auth.uid)).data.carPlate is string
+          && resource.data.licensePlate is string
+          && (
+            // Prefer direct equality, otherwise compare lowercased versions
+            get(/databases/$(database)/documents/users/$(request.auth.uid)).data.carPlate == resource.data.licensePlate
+            || get(/databases/$(database)/documents/users/$(request.auth.uid)).data.carPlate.toLowerCase() == resource.data.licensePlate.toLowerCase()
+          )
+        )
+        &&
+        // The request must set status to 'resolved'
+        request.resource.data.keys().hasAny(['status']) && request.resource.data.status == 'resolved'
+        &&
+        // And must not modify other fields (if present they must equal existing values)
+        (
+          (!request.resource.data.keys().hasAny(['reporterId']) || request.resource.data.reporterId == resource.data.reporterId) &&
+          (!request.resource.data.keys().hasAny(['photoUrl']) || request.resource.data.photoUrl == resource.data.photoUrl) &&
+          (!request.resource.data.keys().hasAny(['location']) || request.resource.data.location == resource.data.location) &&
+          (!request.resource.data.keys().hasAny(['licensePlate']) || request.resource.data.licensePlate == resource.data.licensePlate) &&
+          (!request.resource.data.keys().hasAny(['message']) || request.resource.data.message == resource.data.message) &&
+          (!request.resource.data.keys().hasAny(['timestamp']) || request.resource.data.timestamp == resource.data.timestamp) &&
+          (!request.resource.data.keys().hasAny(['anonymous']) || request.resource.data.anonymous == resource.data.anonymous)
+        )
+      );
+
+      // Do not allow client deletions
+      allow delete: if false;
+    }
+
     match /{document=**} {
-      allow read, write: if true;
+      allow read: if true;
+      allow write: if false;
     }
   }
 }

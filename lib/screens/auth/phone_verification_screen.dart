@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
+import 'package:firebase_auth/firebase_auth.dart' as fb;
 // ignore: depend_on_referenced_packages
 import 'package:intl_phone_field/intl_phone_field.dart';
 import 'package:pinput/pinput.dart';
@@ -101,7 +102,14 @@ class _PhoneVerificationScreenState extends State<PhoneVerificationScreen> {
       });
       _startResendCountdown();
     } catch (e) {
-      setState(() => _error = e.toString());
+      // Present a friendly message to the user instead of raw exception text
+      String friendly;
+      if (e is fb.FirebaseAuthException) {
+        friendly = 'Could not send verification code. Please check the phone number and try again.';
+      } else {
+        friendly = 'Could not send verification code. Please check your internet connection and try again.';
+      }
+      setState(() => _error = friendly);
     } finally {
       setState(() => _loading = false);
     }
@@ -125,7 +133,26 @@ class _PhoneVerificationScreenState extends State<PhoneVerificationScreen> {
         Navigator.pushReplacementNamed(context, HomeScreen.routeName);
       }
     } catch (e) {
-      setState(() => _error = e.toString());
+      // Map FirebaseAuthException codes to user-friendly messages when
+      // verification fails (e.g. wrong OTP).
+      String friendly;
+      if (e is fb.FirebaseAuthException) {
+        switch (e.code) {
+          case 'invalid-verification-code':
+          case 'invalid-verification-id':
+          case 'session-expired':
+            friendly = 'The code you entered is invalid or expired. Please check the 6-digit code and try again.';
+            break;
+          case 'too-many-requests':
+            friendly = 'Too many attempts. Please wait a moment and try again.';
+            break;
+          default:
+            friendly = 'Unable to verify code. Please try again.';
+        }
+      } else {
+        friendly = 'Unable to verify code. Please check your connection and try again.';
+      }
+      setState(() => _error = friendly);
       _pinController.clear();
     } finally {
       setState(() => _loading = false);
