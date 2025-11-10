@@ -50,6 +50,19 @@ class _CreateReportScreenState extends State<CreateReportScreen> {
       _error = null;
     });
     try {
+      // Validate license plate upfront to avoid running through
+      // permission and location flows if the input is missing.
+      final plateText = _plate.text.trim();
+      if (plateText.isEmpty) {
+        final friendly = 'Please enter the vehicle license plate.';
+        AppSnackbar.showError(context, friendly);
+        setState(() {
+          _error = friendly;
+          _loading = false;
+        });
+        return;
+      }
+
       final auth = context.read<AuthService>();
       final locationService = context.read<LocationService>();
 
@@ -141,7 +154,7 @@ class _CreateReportScreenState extends State<CreateReportScreen> {
             TextField(
               controller: _plate,
               decoration: const InputDecoration(
-                labelText: 'License plate (optional)',
+                labelText: 'License plate',
                 prefixIcon: Icon(Icons.directions_car_outlined),
               ),
               textCapitalization: TextCapitalization.characters,
