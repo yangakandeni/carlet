@@ -3,12 +3,10 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:provider/provider.dart';
-import 'package:geolocator/geolocator.dart';
 
 // HomeScreen not used in this test to avoid Firebase initialization.
 import 'package:carlet/screens/report/create_report_screen.dart';
 import 'package:carlet/services/auth_service.dart';
-import 'package:carlet/services/location_service.dart';
 import 'package:carlet/models/user_model.dart';
 
 class MockAuthService extends AuthService {
@@ -18,35 +16,12 @@ class MockAuthService extends AuthService {
   AppUser? get currentUser => _u;
 }
 
-class MockLocationService extends LocationService {
-  @override
-  Future<LocationPermissionResult> checkPermission() async =>
-      LocationPermissionResult(granted: true);
-
-  @override
-  Future<Position?> getCurrentPosition() async {
-    return Position(
-      latitude: 1.0,
-      longitude: 2.0,
-      timestamp: DateTime.now(),
-      accuracy: 1.0,
-      altitude: 0.0,
-      heading: 0.0,
-      speed: 0.0,
-      speedAccuracy: 0.0,
-      altitudeAccuracy: 0.0,
-      headingAccuracy: 0.0,
-    );
-  }
-}
-
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
 
   testWidgets('create report flow posts and shows success',
       (WidgetTester tester) async {
     final mockAuth = MockAuthService();
-    final mockLocation = MockLocationService();
 
     var createCalled = false;
 
@@ -77,7 +52,6 @@ void main() {
       MultiProvider(
         providers: [
           ChangeNotifierProvider<AuthService>.value(value: mockAuth),
-          Provider<LocationService>.value(value: mockLocation),
         ],
         child: MaterialApp(
           routes: {
@@ -85,8 +59,6 @@ void main() {
             CreateReportScreen.routeName: (_) => CreateReportScreen(
                   onCreateReport: ({
                     required String reporterId,
-                    required double lat,
-                    required double lng,
                     String? licensePlate,
                     String? message,
                     File? photoFile,
@@ -114,8 +86,8 @@ void main() {
     // Ensure CreateReportScreen is present
     expect(find.text('Report car'), findsOneWidget);
 
-    // Enter optional fields and submit
-    await tester.enterText(find.widgetWithText(TextField, 'License plate (optional)'), 'ABC123');
+    // Enter fields and submit
+    await tester.enterText(find.widgetWithText(TextField, 'License plate'), 'ABC123');
     await tester.enterText(find.widgetWithText(TextField, 'Message (optional)'), 'Test');
 
     await tester.tap(find.text('Post alert'));

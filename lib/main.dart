@@ -6,7 +6,6 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
 import 'package:carlet/services/auth_service.dart';
-import 'package:carlet/services/location_service.dart';
 import 'package:carlet/services/messaging_service.dart';
 import 'package:carlet/app.dart';
 import 'package:carlet/firebase_options.dart';
@@ -39,7 +38,6 @@ Future<void> main() async {
       providers: [
         ChangeNotifierProvider(create: (_) => AuthService()),
         Provider(create: (_) => MessagingService()),
-        Provider(create: (_) => LocationService()),
       ],
       child: const CarletApp(),
     ),

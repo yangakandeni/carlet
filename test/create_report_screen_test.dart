@@ -14,8 +14,6 @@ void main() {
       home: CreateReportScreen(
         onCreateReport: ({
           required String reporterId,
-          required double lat,
-          required double lng,
           String? licensePlate,
           String? message,
           File? photoFile,
@@ -39,6 +37,6 @@ void main() {
     expect(called, isFalse);
 
     // A friendly error message should be shown in the UI
-    expect(find.text('Please enter the vehicle license plate to post an alert.'), findsOneWidget);
+    expect(find.text('Please enter the vehicle license plate.'), findsOneWidget);
   });
 }

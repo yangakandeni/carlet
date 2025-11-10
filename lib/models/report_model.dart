@@ -4,8 +4,6 @@ class Report {
   final String id;
   final String reporterId;
   final String? photoUrl;
-  final double lat;
-  final double lng;
   final String? licensePlate;
   final String? message;
   final String status; // 'open' | 'resolved'
@@ -17,8 +15,6 @@ class Report {
   const Report({
     required this.id,
     required this.reporterId,
-    required this.lat,
-    required this.lng,
     required this.status,
     required this.timestamp,
     this.resolvedAt,
@@ -31,7 +27,6 @@ class Report {
   
 
   factory Report.fromMap(String id, Map<String, dynamic> map) {
-    final loc = map['location'] as Map<String, dynamic>?;
     DateTime? parseDate(dynamic v) {
       if (v == null) return null;
       if (v is DateTime) return v;
@@ -45,8 +40,6 @@ class Report {
       id: id,
       reporterId: map['reporterId'] as String,
       photoUrl: map['photoUrl'] as String?,
-      lat: (loc?['lat'] as num).toDouble(),
-      lng: (loc?['lng'] as num).toDouble(),
       licensePlate: map['licensePlate'] as String?,
       message: map['message'] as String?,
       status: (map['status'] as String?) ?? 'open',
@@ -61,7 +54,6 @@ class Report {
     final m = <String, dynamic>{
       'reporterId': reporterId,
       'photoUrl': photoUrl,
-      'location': {'lat': lat, 'lng': lng},
       'licensePlate': licensePlate,
       'message': message,
       'status': status,

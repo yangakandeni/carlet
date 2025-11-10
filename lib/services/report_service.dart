@@ -31,8 +31,6 @@ class ReportService {
 
   Future<String> createReport({
     required String reporterId,
-    required double lat,
-    required double lng,
     String? licensePlate,
     String? message,
     File? photoFile,
@@ -49,8 +47,6 @@ class ReportService {
       id: id,
       reporterId: reporterId,
       photoUrl: photoUrl,
-      lat: lat,
-      lng: lng,
       licensePlate: licensePlate?.toUpperCase().replaceAll(' ', ''),
       message: message,
       status: 'open',

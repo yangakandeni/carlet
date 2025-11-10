@@ -36,8 +36,6 @@ class TestAuthService extends AuthService {
       carColor: _user!.carColor,
       photoUrl: photoUrl ?? _user!.photoUrl,
       deviceToken: _user!.deviceToken,
-      lastLat: _user!.lastLat,
-      lastLng: _user!.lastLng,
       onboardingComplete: _user!.onboardingComplete,
     );
     return _user!;

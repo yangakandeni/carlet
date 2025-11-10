@@ -5,7 +5,6 @@ import 'package:image_picker/image_picker.dart';
 import 'package:provider/provider.dart';
 
 import 'package:carlet/services/auth_service.dart';
-import 'package:carlet/services/location_service.dart';
 import 'package:carlet/services/report_service.dart';
 import 'package:carlet/utils/snackbar.dart';
 
@@ -16,8 +15,6 @@ class CreateReportScreen extends StatefulWidget {
   /// here to make the screen testable without hitting Firebase.
   final Future<String> Function({
     required String reporterId,
-    required double lat,
-    required double lng,
     String? licensePlate,
     String? message,
     File? photoFile,
@@ -50,8 +47,7 @@ class _CreateReportScreenState extends State<CreateReportScreen> {
       _error = null;
     });
     try {
-      // Validate license plate upfront to avoid running through
-      // permission and location flows if the input is missing.
+      // Validate license plate upfront
       final plateText = _plate.text.trim();
       if (plateText.isEmpty) {
         final friendly = 'Please enter the vehicle license plate.';
@@ -64,28 +60,11 @@ class _CreateReportScreenState extends State<CreateReportScreen> {
       }
 
       final auth = context.read<AuthService>();
-      final locationService = context.read<LocationService>();
-
-      // Check permission first and get detailed error if denied
-      final permissionResult = await locationService.checkPermission();
-      if (!permissionResult.granted) {
-        throw Exception(
-            permissionResult.message ?? 'Location permission denied.');
-      }
-
-      // Now get the actual location
-      final loc = await locationService.getCurrentPosition();
-      if (loc == null) {
-        throw Exception('Unable to get your location. Please try again.');
-      }
-
       final file = _photo != null ? File(_photo!.path) : null;
       final createFn = widget.onCreateReport;
       if (createFn != null) {
         await createFn(
           reporterId: auth.currentUser!.id,
-          lat: loc.latitude,
-          lng: loc.longitude,
           licensePlate: _plate.text.trim(),
           message: _message.text.trim(),
           photoFile: file,
@@ -94,8 +73,6 @@ class _CreateReportScreenState extends State<CreateReportScreen> {
       } else {
         await ReportService().createReport(
           reporterId: auth.currentUser!.id,
-          lat: loc.latitude,
-          lng: loc.longitude,
           licensePlate: _plate.text.trim(),
           message: _message.text.trim(),
           photoFile: file,

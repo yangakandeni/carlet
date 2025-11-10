@@ -3,7 +3,6 @@ import 'package:provider/provider.dart';
 
 import 'package:carlet/services/auth_service.dart';
 import 'package:carlet/services/messaging_service.dart';
-import 'package:carlet/services/location_service.dart';
 import 'package:carlet/screens/auth/login_screen.dart';
 import 'package:carlet/screens/home/home_screen.dart';
 
@@ -29,9 +28,8 @@ class _SplashScreenState extends State<SplashScreen> {
       if (auth.currentUser != null) {
         final user = auth.currentUser!;
         final userId = user.id;
-        // Best-effort updates (no await to avoid blocking navigation)
+        // Best-effort update (no await to avoid blocking navigation)
         context.read<MessagingService>().ensurePermissionAndToken(userId);
-        context.read<LocationService>().updateUserLocation(userId);
         if (user.onboardingComplete == true) {
           Navigator.of(context).pushReplacementNamed(HomeScreen.routeName);
         } else {

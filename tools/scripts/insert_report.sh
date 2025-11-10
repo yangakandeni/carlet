@@ -43,8 +43,6 @@ REPORT_ID=""
 REPORTER_ID=""
 ANONYMOUS="false"
 LICENSE_PLATE=""
-LAT="37.4219983"
-LNG="-122.084"
 MESSAGE="Dear in the headlights"
 PHOTO_URL="https://images.unsplash.com/photo-1441148345475-03a2e82f9719?ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxzZWFyY2h8Mnx8Y2FyJTIwZnJvbnR8ZW58MHx8MHx8fDA%3D&auto=format&fit=crop&q=60&w=900"
 TIMESTAMP=""
@@ -56,12 +54,13 @@ while [[ $# -gt 0 ]]; do
     --reporter-id) REPORTER_ID="$2"; shift 2;;
     --anonymous) ANONYMOUS="$2"; shift 2;;
     --license-plate) LICENSE_PLATE="$2"; shift 2;;
-    --lat) LAT="$2"; shift 2;;
-    --lng) LNG="$2"; shift 2;;
     --message) MESSAGE="$2"; shift 2;;
     --photo-url) PHOTO_URL="$2"; shift 2;;
     --timestamp) TIMESTAMP="$2"; shift 2;;
     --collection) COLLECTION="$2"; shift 2;;
+    # Legacy location flags - ignore them for backward compatibility
+    --lat) shift 2;;
+    --lng) shift 2;;
     -h|--help) usage; exit 0;;
     *) echo "Unknown arg: $1"; usage; exit 2;;
   esac
@@ -103,14 +102,6 @@ read -r -d '' PAYLOAD <<JSON || true
   "fields": {
     "anonymous": {"booleanValue": ${ANONYMOUS_BOOL}},
     "licensePlate": {"stringValue": "${LICENSE_PLATE}"},
-    "location": {
-      "mapValue": {
-        "fields": {
-          "lat": {"doubleValue": ${LAT}},
-          "lng": {"doubleValue": ${LNG}}
-        }
-      }
-    },
     "message": {"stringValue": "${MESSAGE}"},
     "photoUrl": {"stringValue": "${PHOTO_URL}"},
     "reporterId": {"stringValue": "${REPORTER_ID}"},

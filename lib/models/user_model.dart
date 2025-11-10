@@ -9,8 +9,6 @@ class AppUser {
   final String? carColor;
   final String? photoUrl;
   final String? deviceToken;
-  final double? lastLat;
-  final double? lastLng;
   final bool onboardingComplete;
 
   const AppUser({
@@ -24,8 +22,6 @@ class AppUser {
     this.carColor,
     this.photoUrl,
     this.deviceToken,
-    this.lastLat,
-    this.lastLng,
     this.onboardingComplete = false,
   });
 
@@ -39,8 +35,6 @@ class AppUser {
     'carColor': carColor,
         'photoUrl': photoUrl,
         'deviceToken': deviceToken,
-        'lastLat': lastLat,
-        'lastLng': lastLng,
     'onboardingComplete': onboardingComplete,
       };
 
@@ -57,10 +51,6 @@ class AppUser {
       carColor: map['carColor'] as String?,
       photoUrl: map['photoUrl'] as String?,
       deviceToken: map['deviceToken'] as String?,
-      lastLat:
-          (map['lastLat'] is num) ? (map['lastLat'] as num).toDouble() : null,
-      lastLng:
-          (map['lastLng'] is num) ? (map['lastLng'] as num).toDouble() : null,
       onboardingComplete: map['onboardingComplete'] is bool
           ? map['onboardingComplete'] as bool
           : false,
