@@ -11,6 +11,9 @@ class Report {
   final DateTime? resolvedAt;
   final DateTime? expireAt;
   final bool anonymous;
+  final int likeCount;
+  final int commentCount;
+  final List<String> likedBy; // User IDs who liked this report
 
   const Report({
     required this.id,
@@ -23,6 +26,9 @@ class Report {
     this.licensePlate,
     this.message,
     this.anonymous = false,
+    this.likeCount = 0,
+    this.commentCount = 0,
+    this.likedBy = const [],
   });
   
 
@@ -34,6 +40,13 @@ class Report {
       if (v is String) return DateTime.tryParse(v)?.toUtc();
       if (v is num) return DateTime.fromMillisecondsSinceEpoch(v.toInt(), isUtc: true);
       return null;
+    }
+
+    // Parse likedBy list
+    List<String> parseLikedBy(dynamic v) {
+      if (v == null) return [];
+      if (v is List) return v.map((e) => e.toString()).toList();
+      return [];
     }
 
     return Report(
@@ -48,6 +61,9 @@ class Report {
       resolvedAt: parseDate(map['resolvedAt']),
       expireAt: parseDate(map['expireAt']),
       anonymous: (map['anonymous'] as bool?) ?? false,
+      likeCount: (map['likeCount'] as int?) ?? 0,
+      commentCount: (map['commentCount'] as int?) ?? 0,
+      likedBy: parseLikedBy(map['likedBy']),
     );
   }
   Map<String, dynamic> toMap() {
@@ -59,6 +75,9 @@ class Report {
       'status': status,
       'timestamp': timestamp.toIso8601String(),
       'anonymous': anonymous,
+      'likeCount': likeCount,
+      'commentCount': commentCount,
+      'likedBy': likedBy,
     };
     if (resolvedAt != null) m['resolvedAt'] = resolvedAt!.toIso8601String();
     if (expireAt != null) m['expireAt'] = expireAt!.toIso8601String();

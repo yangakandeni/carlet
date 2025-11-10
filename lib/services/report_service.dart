@@ -5,11 +5,13 @@ import 'package:firebase_storage/firebase_storage.dart';
 import 'package:uuid/uuid.dart';
 
 import 'package:carlet/models/report_model.dart';
+import 'package:carlet/services/comment_service.dart';
 
 class ReportService {
   final FirebaseFirestore _db = FirebaseFirestore.instance;
   final FirebaseStorage _storage = FirebaseStorage.instance;
   final _uuid = const Uuid();
+  final _commentService = CommentService();
 
   Stream<List<Report>> streamReports({int limit = 200}) {
     return _db
@@ -70,5 +72,8 @@ class ReportService {
       'resolvedAt': now.toIso8601String(),
       'expireAt': Timestamp.fromDate(now.add(const Duration(minutes: 30))),
     });
+
+    // Delete all comments when report is resolved
+    await _commentService.deleteCommentsForReport(reportId);
   }
 }

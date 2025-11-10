@@ -5,11 +5,15 @@ import 'package:carlet/models/report_model.dart';
 class ReportCard extends StatelessWidget {
   final Report report;
   final VoidCallback? onResolve;
+  final VoidCallback? onLike;
+  final VoidCallback? onComment;
 
   const ReportCard({
     super.key,
     required this.report,
     this.onResolve,
+    this.onLike,
+    this.onComment,
   });
 
   @override
@@ -93,6 +97,75 @@ class ReportCard extends StatelessWidget {
                     ),
                   ),
                 ],
+                const SizedBox(height: 12),
+                // Social engagement row (likes and comments)
+                Row(
+                  children: [
+                    InkWell(
+                      onTap: report.status == 'resolved' ? null : onLike,
+                      borderRadius: BorderRadius.circular(20),
+                      child: Padding(
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 8, vertical: 4),
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Icon(
+                              Icons.favorite,
+                              size: 20,
+                              color: report.status == 'resolved'
+                                  ? Colors.grey
+                                  : theme.colorScheme.primary,
+                            ),
+                            if (report.likeCount > 0) ...[
+                              const SizedBox(width: 4),
+                              Text(
+                                '${report.likeCount}',
+                                style: theme.textTheme.bodySmall?.copyWith(
+                                  color: report.status == 'resolved'
+                                      ? Colors.grey
+                                      : theme.colorScheme.onSurface,
+                                ),
+                              ),
+                            ],
+                          ],
+                        ),
+                      ),
+                    ),
+                    const SizedBox(width: 8),
+                    InkWell(
+                      onTap: report.status == 'resolved' ? null : onComment,
+                      borderRadius: BorderRadius.circular(20),
+                      child: Padding(
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 8, vertical: 4),
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Icon(
+                              Icons.comment,
+                              size: 20,
+                              color: report.status == 'resolved'
+                                  ? Colors.grey
+                                  : theme.colorScheme.primary,
+                            ),
+                            if (report.commentCount > 0) ...[
+                              const SizedBox(width: 4),
+                              Text(
+                                '${report.commentCount}',
+                                style: theme.textTheme.bodySmall?.copyWith(
+                                  color: report.status == 'resolved'
+                                      ? Colors.grey
+                                      : theme.colorScheme.onSurface,
+                                ),
+                              ),
+                            ],
+                          ],
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
                 const SizedBox(height: 12),
                 Text(
                   'Reported: ${report.timestamp.toLocal().toString().split('.')[0]}',

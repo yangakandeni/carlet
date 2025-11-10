@@ -1,5 +1,4 @@
 i  emulators: Starting emulators: auth, firestore, storage
-⚠  emulators: It seems that you are running multiple instances of the emulator suite for project carlet-dev-6be6a. This may result in unexpected behavior.
 i  firestore: Firestore Emulator logging to firestore-debug.log
 ✔  firestore: Firestore Emulator UI websocket is running on 9150.
 ⚠  Unexpected rules runtime error: WARNING: A terminally deprecated method in sun.misc.Unsafe has been called
@@ -27,12 +26,20 @@ WARNING: sun.misc.Unsafe::arrayBaseOffset will be removed in a future release
 
 Issues? Report them at https://github.com/firebase/firebase-tools/issues and attach the *-debug.log files.
  
-i  To verify the phone number +27717662280, use the code 223652.
-i  To verify the phone number +27717662280, use the code 943141.
-i  To verify the phone number +27717662280, use the code 405811.
-i  To verify the phone number +27717662280, use the code 964230.
-i  To verify the phone number +27717662280, use the code 622016.
-i  To verify the phone number +27717662280, use the code 324082.
-i  To verify the phone number +27717662280, use the code 577209.
-i  To verify the phone number +27717662230, use the code 207067.
-i  To verify the phone number +27674557789, use the code 079796.
+i  To verify the phone number +27717662280, use the code 043947.
+i  firestore: Change detected, updating rules...
+⚠  ../../firestore.rules:87:48 - WARNING Invalid function name: toLowerCase.
+⚠  ../../firestore.rules:88:91 - WARNING Invalid function name: toLowerCase.
+⚠  ../../firestore.rules:104:94 - WARNING Invalid function name: toLowerCase.
+⚠  ../../firestore.rules:104:138 - WARNING Invalid function name: toLowerCase.
+✔  firestore: Rules updated.
+i  firestore: Change detected, updating rules...
+⚠  ../../firestore.rules:87:48 - WARNING Invalid function name: toLowerCase.
+⚠  ../../firestore.rules:88:91 - WARNING Invalid function name: toLowerCase.
+⚠  ../../firestore.rules:104:94 - WARNING Invalid function name: toLowerCase.
+⚠  ../../firestore.rules:104:138 - WARNING Invalid function name: toLowerCase.
+✔  firestore: Rules updated.
+i  To verify the phone number +27717662280, use the code 863651.
+i  To verify the phone number +27717662280, use the code 798624.
+i  To verify the phone number +27717662280, use the code 315682.
+i  To verify the phone number +27717662280, use the code 168402.

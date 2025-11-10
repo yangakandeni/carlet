@@ -74,21 +74,28 @@ service cloud.firestore {
 
       // Create: authenticated user can create a report. Validate minimal
       // required fields and basic types. Require reporterId == auth.uid and
-      // initial status to be 'open'.
+      // initial status to be 'open'. User cannot report their own car.
       allow create: if request.auth != null &&
         request.resource.data.reporterId == request.auth.uid &&
-        request.resource.data.keys().hasAll(['reporterId','location','status','timestamp']) &&
-        (request.resource.data.location.lat is number) &&
-        (request.resource.data.location.lng is number) &&
-        request.resource.data.status == 'open';
-
-      // Update: only allow the vehicle owner to change status to 'resolved'.
-      // Owner is determined by comparing the user's stored carPlate to the
-      // report's licensePlate. Also ensure no other fields are modified in
-      // the same update.
-      allow update: if request.auth != null && (
-        // Owner condition: user's carPlate exists and matches report licensePlate
+        request.resource.data.keys().hasAll(['reporterId','status','timestamp']) &&
+        request.resource.data.status == 'open' &&
+        // Prevent users from reporting their own car
         (
+          !request.resource.data.keys().hasAny(['licensePlate']) ||
+          !get(/databases/$(database)/documents/users/$(request.auth.uid)).data.keys().hasAny(['carPlate']) ||
+          (
+            request.resource.data.licensePlate.toLowerCase().replace(' ', '') != 
+            get(/databases/$(database)/documents/users/$(request.auth.uid)).data.carPlate.toLowerCase().replace(' ', '')
+          )
+        );
+
+      // Update: allow two types of updates:
+      // 1. Vehicle owner can mark as 'resolved'
+      // 2. Any authenticated user can update social engagement fields (likes, comments)
+      allow update: if request.auth != null && (
+        // Case 1: Owner marking as resolved
+        (
+          // Owner condition: user's carPlate exists and matches report licensePlate
           get(/databases/$(database)/documents/users/$(request.auth.uid)).data.carPlate is string
           && resource.data.licensePlate is string
           && (
@@ -96,25 +103,77 @@ service cloud.firestore {
             get(/databases/$(database)/documents/users/$(request.auth.uid)).data.carPlate == resource.data.licensePlate
             || get(/databases/$(database)/documents/users/$(request.auth.uid)).data.carPlate.toLowerCase() == resource.data.licensePlate.toLowerCase()
           )
+          &&
+          // The request must set status to 'resolved'
+          request.resource.data.keys().hasAny(['status']) && request.resource.data.status == 'resolved'
+          &&
+          // And must not modify other fields (if present they must equal existing values)
+          (
+            (!request.resource.data.keys().hasAny(['reporterId']) || request.resource.data.reporterId == resource.data.reporterId) &&
+            (!request.resource.data.keys().hasAny(['photoUrl']) || request.resource.data.photoUrl == resource.data.photoUrl) &&
+            (!request.resource.data.keys().hasAny(['licensePlate']) || request.resource.data.licensePlate == resource.data.licensePlate) &&
+            (!request.resource.data.keys().hasAny(['message']) || request.resource.data.message == resource.data.message) &&
+            (!request.resource.data.keys().hasAny(['timestamp']) || request.resource.data.timestamp == resource.data.timestamp) &&
+            (!request.resource.data.keys().hasAny(['anonymous']) || request.resource.data.anonymous == resource.data.anonymous)
+          )
         )
-        &&
-        // The request must set status to 'resolved'
-        request.resource.data.keys().hasAny(['status']) && request.resource.data.status == 'resolved'
-        &&
-        // And must not modify other fields (if present they must equal existing values)
+        ||
+        // Case 2: Updating social engagement fields (likes, comments)
+        // Only allow updating likeCount, commentCount, and likedBy
+        // Ensure no other critical fields are modified
         (
-          (!request.resource.data.keys().hasAny(['reporterId']) || request.resource.data.reporterId == resource.data.reporterId) &&
+          resource.data.status == 'open' && // Can only like/comment on open reports
+          // Only social engagement fields can be updated
+          (
+            request.resource.data.keys().hasOnly(['likeCount', 'commentCount', 'likedBy', 
+              'reporterId', 'photoUrl', 'licensePlate', 'message', 'status', 'timestamp', 'anonymous'])
+          ) &&
+          // Core fields must not change
+          request.resource.data.reporterId == resource.data.reporterId &&
+          request.resource.data.status == resource.data.status &&
+          request.resource.data.timestamp == resource.data.timestamp &&
           (!request.resource.data.keys().hasAny(['photoUrl']) || request.resource.data.photoUrl == resource.data.photoUrl) &&
-          (!request.resource.data.keys().hasAny(['location']) || request.resource.data.location == resource.data.location) &&
           (!request.resource.data.keys().hasAny(['licensePlate']) || request.resource.data.licensePlate == resource.data.licensePlate) &&
           (!request.resource.data.keys().hasAny(['message']) || request.resource.data.message == resource.data.message) &&
-          (!request.resource.data.keys().hasAny(['timestamp']) || request.resource.data.timestamp == resource.data.timestamp) &&
           (!request.resource.data.keys().hasAny(['anonymous']) || request.resource.data.anonymous == resource.data.anonymous)
         )
       );
 
       // Do not allow client deletions
       allow delete: if false;
+    }
+
+    // Comments collection: allow authenticated users to create and manage comments
+    match /comments/{commentId} {
+      // Anyone can read comments (public)
+      allow read: if true;
+
+      // Create: authenticated user can create a comment
+      // Must set userId to their own auth.uid and provide required fields
+      allow create: if request.auth != null &&
+        request.resource.data.userId == request.auth.uid &&
+        request.resource.data.keys().hasAll(['reportId', 'userId', 'text', 'timestamp']) &&
+        request.resource.data.reportId is string &&
+        request.resource.data.text is string &&
+        request.resource.data.timestamp is timestamp;
+
+      // Update: authenticated user can update reactions on any comment
+      // or delete their own comment by updating it
+      allow update: if request.auth != null && (
+        // Can update reactions map only
+        request.resource.data.keys().hasOnly(['id', 'reportId', 'userId', 'userName', 
+          'userPhotoUrl', 'text', 'parentCommentId', 'reactions', 'timestamp']) &&
+        request.resource.data.reportId == resource.data.reportId &&
+        request.resource.data.userId == resource.data.userId &&
+        request.resource.data.text == resource.data.text &&
+        request.resource.data.timestamp == resource.data.timestamp &&
+        (!request.resource.data.keys().hasAny(['parentCommentId']) || 
+          request.resource.data.parentCommentId == resource.data.parentCommentId)
+      );
+
+      // Delete: only the comment author can delete their own comment
+      allow delete: if request.auth != null && 
+        request.auth.uid == resource.data.userId;
     }
 
     match /{document=**} {

@@ -171,12 +171,33 @@ class AuthService extends ChangeNotifier {
     
     // First check if the user document already exists
     final existingDoc = await ref.get();
-    final data = <String, dynamic>{
-      'name': user.displayName,
-      'email': user.email,
-      'phoneNumber': user.phoneNumber,
-      'photoUrl': user.photoURL,
-    };
+    
+    // For returning users, don't overwrite existing data
+    // Just ensure the document exists and return it
+    if (existingDoc.exists && existingDoc.data()?['onboardingComplete'] == true) {
+      // Returning user with completed onboarding - don't overwrite their data
+      // Just update phone number if it changed
+      if (user.phoneNumber != null) {
+        await ref.set({
+          'phoneNumber': user.phoneNumber,
+        }, SetOptions(merge: true));
+      }
+      final doc = await ref.get();
+      final appUser = AppUser.fromMap(doc.id, doc.data());
+      _currentUser = appUser;
+      notifyListeners();
+      return appUser;
+    }
+    
+    // For new users or users who haven't completed onboarding,
+    // initialize/update their document with Firebase Auth data
+    final data = <String, dynamic>{};
+    
+    // Only set fields if they have values (not null)
+    if (user.displayName != null) data['name'] = user.displayName;
+    if (user.email != null) data['email'] = user.email;
+    if (user.phoneNumber != null) data['phoneNumber'] = user.phoneNumber;
+    if (user.photoURL != null) data['photoUrl'] = user.photoURL;
     
     // Only set onboardingComplete to false if it doesn't exist
     // This prevents overwriting the flag for returning users

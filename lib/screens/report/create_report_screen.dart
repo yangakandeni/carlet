@@ -60,11 +60,29 @@ class _CreateReportScreenState extends State<CreateReportScreen> {
       }
 
       final auth = context.read<AuthService>();
+      final user = auth.currentUser;
+      
+      // Check if user is trying to report their own car
+      if (user?.carPlate != null && user!.carPlate!.isNotEmpty) {
+        final normalizedUserPlate = user.carPlate!.toUpperCase().replaceAll(' ', '');
+        final normalizedInputPlate = plateText.toUpperCase().replaceAll(' ', '');
+        
+        if (normalizedUserPlate == normalizedInputPlate) {
+          final friendly = 'You cannot report your own vehicle.';
+          AppSnackbar.showError(context, friendly);
+          setState(() {
+            _error = friendly;
+            _loading = false;
+          });
+          return;
+        }
+      }
+
       final file = _photo != null ? File(_photo!.path) : null;
       final createFn = widget.onCreateReport;
       if (createFn != null) {
         await createFn(
-          reporterId: auth.currentUser!.id,
+          reporterId: user!.id,
           licensePlate: _plate.text.trim(),
           message: _message.text.trim(),
           photoFile: file,
@@ -72,7 +90,7 @@ class _CreateReportScreenState extends State<CreateReportScreen> {
         );
       } else {
         await ReportService().createReport(
-          reporterId: auth.currentUser!.id,
+          reporterId: user!.id,
           licensePlate: _plate.text.trim(),
           message: _message.text.trim(),
           photoFile: file,

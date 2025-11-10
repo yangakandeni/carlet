@@ -4,8 +4,10 @@ import 'package:provider/provider.dart';
 import 'package:carlet/models/report_model.dart';
 import 'package:carlet/services/auth_service.dart';
 import 'package:carlet/services/report_service.dart';
+import 'package:carlet/services/comment_service.dart';
 import 'package:carlet/widgets/report_card.dart';
 import 'package:carlet/utils/snackbar.dart';
+import 'package:carlet/screens/comments/comments_screen.dart';
 
 class FeedScreen extends StatefulWidget {
   const FeedScreen({super.key});
@@ -15,6 +17,8 @@ class FeedScreen extends StatefulWidget {
 }
 
 class _FeedScreenState extends State<FeedScreen> {
+  final _commentService = CommentService();
+
   @override
   Widget build(BuildContext context) {
     final reportService = ReportService();
@@ -56,6 +60,18 @@ class _FeedScreenState extends State<FeedScreen> {
                       AppSnackbar.showSuccess(context, 'Marked as resolved.');
                     }
                   : null,
+              onLike: () async {
+                final userId = user?.id;
+                if (userId == null) return;
+                await _commentService.toggleLike(r.id, userId);
+              },
+              onComment: () {
+                Navigator.of(context).push(
+                  MaterialPageRoute(
+                    builder: (_) => CommentsScreen(report: r),
+                  ),
+                );
+              },
             );
           },
           separatorBuilder: (_, __) => const SizedBox(height: 12),
