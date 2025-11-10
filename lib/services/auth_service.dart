@@ -74,12 +74,15 @@ class AuthService extends ChangeNotifier {
     // other Firebase services (Firestore) before we attempt to write the
     // user's document. This avoids a race where the Firestore request
     // arrives without auth context and triggers rules evaluation errors.
-    try {
-      await cred.user?.getIdToken(true);
-    } catch (_) {
-      // Ignored: proceed to ensure user doc; if Firestore rejects due to
-      // missing auth, the caller will receive the error which we don't
-      // swallow here.
+    // Wait up to 3 seconds for the token to be available.
+    for (var i = 0; i < 6; i++) {
+      try {
+        final token = await cred.user?.getIdToken(false);
+        if (token != null && token.isNotEmpty) break;
+      } catch (_) {
+        // Token not ready yet
+      }
+      await Future.delayed(const Duration(milliseconds: 500));
     }
     return _ensureUserDoc(cred.user!);
   }
@@ -88,15 +91,100 @@ class AuthService extends ChangeNotifier {
     await _auth.signOut();
   }
 
+  /// Update user profile fields that are allowed to change after onboarding.
+  /// Vehicle fields (carMake/carModel/carColor/carPlate) must not be
+  /// updated through this method to respect immutability rules.
+  Future<AppUser> updateProfile({String? name, String? email, String? photoUrl}) async {
+    final fbUser = _auth.currentUser;
+    if (fbUser == null) throw Exception('Not signed in');
+    final ref = _db.collection('users').doc(fbUser.uid);
+    final data = <String, dynamic>{};
+    if (name != null) data['name'] = name;
+    if (email != null) data['email'] = email;
+    if (photoUrl != null) data['photoUrl'] = photoUrl;
+    if (data.isEmpty) return currentUser!;
+    await ref.set(data, SetOptions(merge: true));
+    final doc = await ref.get();
+    final appUser = AppUser.fromMap(doc.id, doc.data());
+    _currentUser = appUser;
+    notifyListeners();
+    return appUser;
+  }
+
+  /// Start phone number update verification.
+  /// Returns verificationId to be used with confirmPhoneUpdate.
+  Future<String> updatePhoneNumber(String newPhoneNumber) async {
+    final fbUser = _auth.currentUser;
+    if (fbUser == null) throw Exception('Not signed in');
+    
+    final completer = Completer<String>();
+    await _auth.verifyPhoneNumber(
+      phoneNumber: newPhoneNumber,
+      verificationCompleted: (fb.PhoneAuthCredential credential) async {
+        // Auto-resolve on Android
+        await fbUser.updatePhoneNumber(credential);
+        // Update Firestore document
+        await _db.collection('users').doc(fbUser.uid).set({
+          'phoneNumber': newPhoneNumber,
+        }, SetOptions(merge: true));
+      },
+      verificationFailed: (fb.FirebaseAuthException e) {
+        completer.completeError(e);
+      },
+      codeSent: (String verificationId, int? resendToken) {
+        completer.complete(verificationId);
+      },
+      codeAutoRetrievalTimeout: (String verificationId) {
+        if (!completer.isCompleted) completer.complete(verificationId);
+      },
+    );
+    return completer.future;
+  }
+
+  /// Confirm phone number update with SMS code.
+  /// Updates both Firebase Auth and Firestore user document.
+  Future<void> confirmPhoneUpdate(String verificationId, String smsCode, String newPhoneNumber) async {
+    final fbUser = _auth.currentUser;
+    if (fbUser == null) throw Exception('Not signed in');
+    
+    final credential = fb.PhoneAuthProvider.credential(
+      verificationId: verificationId,
+      smsCode: smsCode,
+    );
+    
+    // Update phone number in Firebase Auth
+    await fbUser.updatePhoneNumber(credential);
+    
+    // Update Firestore user document
+    await _db.collection('users').doc(fbUser.uid).set({
+      'phoneNumber': newPhoneNumber,
+    }, SetOptions(merge: true));
+    
+    // Refresh current user data
+    final doc = await _db.collection('users').doc(fbUser.uid).get();
+    _currentUser = AppUser.fromMap(doc.id, doc.data());
+    notifyListeners();
+  }
+
   Future<AppUser> _ensureUserDoc(fb.User user) async {
     final ref = _db.collection('users').doc(user.uid);
-    await ref.set({
+    
+    // First check if the user document already exists
+    final existingDoc = await ref.get();
+    final data = <String, dynamic>{
       'name': user.displayName,
       'email': user.email,
+      'phoneNumber': user.phoneNumber,
       'photoUrl': user.photoURL,
-      // Ensure onboardingComplete flag exists (defaults to false)
-      'onboardingComplete': false,
-    }, SetOptions(merge: true));
+    };
+    
+    // Only set onboardingComplete to false if it doesn't exist
+    // This prevents overwriting the flag for returning users
+    if (!existingDoc.exists || existingDoc.data()?['onboardingComplete'] == null) {
+      data['onboardingComplete'] = false;
+    }
+    
+    await ref.set(data, SetOptions(merge: true));
     final doc = await ref.get();
     final appUser = AppUser.fromMap(doc.id, doc.data());
     _currentUser = appUser;

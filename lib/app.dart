@@ -6,6 +6,7 @@ import 'package:carlet/screens/auth/login_screen.dart';
 import 'package:carlet/screens/home/home_screen.dart';
 import 'package:carlet/screens/report/create_report_screen.dart';
 import 'package:carlet/screens/auth/onboarding_screen.dart';
+import 'package:carlet/screens/profile/profile_screen.dart';
 
 class CarletApp extends StatelessWidget {
   const CarletApp({super.key});
@@ -48,6 +49,7 @@ class CarletApp extends StatelessWidget {
           OnboardingScreen.routeName: (_) => const OnboardingScreen(),
         HomeScreen.routeName: (_) => const HomeScreen(),
         CreateReportScreen.routeName: (_) => const CreateReportScreen(),
+        ProfileScreen.routeName: (_) => const ProfileScreen(),
       },
     );
   }

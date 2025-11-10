@@ -2,6 +2,7 @@ class AppUser {
   final String id;
   final String? name;
   final String? email;
+  final String? phoneNumber;
   final String? carPlate;
   final String? carModel;
   final String? carMake;
@@ -16,6 +17,7 @@ class AppUser {
     required this.id,
     this.name,
     this.email,
+    this.phoneNumber,
     this.carPlate,
     this.carModel,
     this.carMake,
@@ -30,6 +32,7 @@ class AppUser {
   Map<String, dynamic> toMap() => {
         'name': name,
         'email': email,
+        'phoneNumber': phoneNumber,
         'carPlate': carPlate,
     'carModel': carModel,
     'carMake': carMake,
@@ -47,6 +50,7 @@ class AppUser {
       id: id,
       name: map['name'] as String?,
       email: map['email'] as String?,
+      phoneNumber: map['phoneNumber'] as String?,
       carPlate: map['carPlate'] as String?,
       carModel: map['carModel'] as String?,
       carMake: map['carMake'] as String?,

@@ -4,8 +4,8 @@ import 'package:provider/provider.dart';
 import 'package:carlet/utils/snackbar.dart';
 
 import 'package:carlet/screens/feed/feed_screen.dart';
-import 'package:carlet/screens/map/map_screen.dart';
 import 'package:carlet/screens/report/create_report_screen.dart';
+import 'package:carlet/screens/profile/profile_screen.dart';
 import 'package:carlet/services/auth_service.dart';
 
 class HomeScreen extends StatefulWidget {
@@ -17,8 +17,6 @@ class HomeScreen extends StatefulWidget {
 }
 
 class _HomeScreenState extends State<HomeScreen> {
-  int _tab = 0;
-
   @override
   void initState() {
     super.initState();
@@ -33,53 +31,48 @@ class _HomeScreenState extends State<HomeScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final tabs = [
-      const FeedScreen(),
-      const MapScreen(),
-    ];
-    final titles = ['Alerts', 'Map'];
+    final user = context.watch<AuthService>().currentUser;
 
     return Scaffold(
       appBar: AppBar(
-        title: Text(titles[_tab]),
+        // Report button on the far left
+        leading: IconButton(
+          onPressed: () async {
+            final navigator = Navigator.of(context);
+            final result = await navigator.pushNamed(
+              CreateReportScreen.routeName,
+            );
+            if (!mounted) return;
+            if (result == true) {
+              // ignore: use_build_context_synchronously
+              AppSnackbar.showSuccess(context, 'Report posted.');
+            }
+          },
+          icon: const Icon(Icons.add_box_rounded),
+          tooltip: 'Report issue',
+        ),
+        title: const Text('Alerts'),
+        // Profile button on the far right
         actions: [
           IconButton(
-            onPressed: () => context.read<AuthService>().signOut(),
-            icon: const Icon(Icons.logout),
-            tooltip: 'Sign out',
+            onPressed: () => Navigator.pushNamed(context, ProfileScreen.routeName),
+            icon: user != null
+                ? (user.photoUrl != null && user.photoUrl!.isNotEmpty
+                    ? CircleAvatar(radius: 16, backgroundImage: NetworkImage(user.photoUrl!))
+                    : CircleAvatar(
+                        radius: 16,
+                        child: Text(
+                          (user.name != null && user.name!.trim().isNotEmpty)
+                              ? user.name!.trim().split(' ').map((s) => s.isNotEmpty ? s[0] : '').take(2).join().toUpperCase()
+                              : '?',
+                        ),
+                      ))
+                : const Icon(Icons.person_outline),
+            tooltip: 'Profile',
           ),
         ],
       ),
-      body: tabs[_tab],
-      floatingActionButton: FloatingActionButton.extended(
-        onPressed: () async {
-          // Capture the navigator synchronously so we don't reference
-          // `context` across an `await` which trips analyzer lint.
-          final navigator = Navigator.of(context);
-          final result = await navigator.pushNamed(
-            CreateReportScreen.routeName,
-          );
-          // Ensure widget still mounted before using context after an await.
-          if (!mounted) return;
-          // If the create screen signalled success, show feedback now
-          if (result == true) {
-            // Safe here because we validated `mounted` above; suppress
-            // the lint about using BuildContext across async gaps.
-            // ignore: use_build_context_synchronously
-            AppSnackbar.showSuccess(context, 'Report posted.');
-          }
-        },
-        icon: const Icon(Icons.report),
-        label: const Text('Report car'),
-      ),
-      bottomNavigationBar: NavigationBar(
-        selectedIndex: _tab,
-        destinations: const [
-          NavigationDestination(icon: Icon(Icons.list_alt), label: 'Feed'),
-          NavigationDestination(icon: Icon(Icons.map_outlined), label: 'Map'),
-        ],
-        onDestinationSelected: (i) => setState(() => _tab = i),
-      ),
+      body: const FeedScreen(),
     );
   }
 }

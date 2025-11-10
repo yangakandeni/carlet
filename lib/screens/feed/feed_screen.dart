@@ -3,7 +3,6 @@ import 'package:provider/provider.dart';
 
 import 'package:carlet/models/report_model.dart';
 import 'package:carlet/services/auth_service.dart';
-import 'package:carlet/services/location_service.dart';
 import 'package:carlet/services/report_service.dart';
 import 'package:carlet/widgets/report_card.dart';
 import 'package:carlet/utils/snackbar.dart';
@@ -16,35 +15,6 @@ class FeedScreen extends StatefulWidget {
 }
 
 class _FeedScreenState extends State<FeedScreen> {
-  double? _myLat;
-  double? _myLng;
-
-  @override
-  void initState() {
-    super.initState();
-    _loadMyLocation();
-  }
-
-  Future<void> _loadMyLocation() async {
-    try {
-      final pos = await context.read<LocationService>().getCurrentPosition();
-      if (!mounted) return;
-      setState(() {
-        _myLat = pos?.latitude;
-        _myLng = pos?.longitude;
-      });
-    } catch (e) {
-      // Silently fail if location can't be obtained
-      // The app will still work, just without distance calculations
-      if (mounted) {
-        setState(() {
-          _myLat = null;
-          _myLng = null;
-        });
-      }
-    }
-  }
-
   @override
   Widget build(BuildContext context) {
     final reportService = ReportService();
@@ -78,9 +48,7 @@ class _FeedScreenState extends State<FeedScreen> {
                     r.licensePlate!.toUpperCase().replaceAll(' ', ''));
             return ReportCard(
               report: r,
-              myLat: _myLat,
-              myLng: _myLng,
-                  onResolve: canResolve
+              onResolve: canResolve
                   ? () async {
                       await reportService.markResolved(r.id);
                       if (!context.mounted) return;
