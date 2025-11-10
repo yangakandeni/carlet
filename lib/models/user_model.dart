@@ -6,7 +6,6 @@ class AppUser {
   final String? carPlate;
   final String? carModel;
   final String? carMake;
-  final String? carColor;
   final String? photoUrl;
   final String? deviceToken;
   final bool onboardingComplete;
@@ -19,7 +18,6 @@ class AppUser {
     this.carPlate,
     this.carModel,
     this.carMake,
-    this.carColor,
     this.photoUrl,
     this.deviceToken,
     this.onboardingComplete = false,
@@ -32,7 +30,6 @@ class AppUser {
         'carPlate': carPlate,
     'carModel': carModel,
     'carMake': carMake,
-    'carColor': carColor,
         'photoUrl': photoUrl,
         'deviceToken': deviceToken,
     'onboardingComplete': onboardingComplete,
@@ -48,7 +45,6 @@ class AppUser {
       carPlate: map['carPlate'] as String?,
       carModel: map['carModel'] as String?,
       carMake: map['carMake'] as String?,
-      carColor: map['carColor'] as String?,
       photoUrl: map['photoUrl'] as String?,
       deviceToken: map['deviceToken'] as String?,
       onboardingComplete: map['onboardingComplete'] is bool

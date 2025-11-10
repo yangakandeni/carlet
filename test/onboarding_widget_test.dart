@@ -29,7 +29,6 @@ class MockAuthService extends AuthService {
     required String name,
     required String carMake,
     required String carModel,
-    required String carColor,
     required String carPlate,
   }) async {
     // Optionally simulate a write failure for testing the error UI
@@ -49,7 +48,6 @@ class MockAuthService extends AuthService {
       photoUrl: _fakeUser?.photoUrl,
       deviceToken: _fakeUser?.deviceToken,
       carMake: carMake,
-      carColor: carColor,
       onboardingComplete: true,
     );
     notifyListeners();
@@ -78,14 +76,12 @@ void main() {
         ),
       );
 
-  // Ensure fields are present (name, make, model, color, plate)
-  expect(find.byType(TextFormField), findsNWidgets(5));
+  // Ensure fields are present (name, vehicle, plate)
+  expect(find.byType(TextFormField), findsNWidgets(3));
 
       // Fill fields
       await tester.enterText(find.widgetWithText(TextFormField, 'Full name'), 'Alice');
-      await tester.enterText(find.widgetWithText(TextFormField, 'Vehicle make'), 'Toyota');
-      await tester.enterText(find.widgetWithText(TextFormField, 'Vehicle model'), 'Corolla');
-      await tester.enterText(find.widgetWithText(TextFormField, 'Color'), 'Blue');
+      await tester.enterText(find.widgetWithText(TextFormField, 'Vehicle'), 'Toyota Corolla');
       await tester.enterText(find.widgetWithText(TextFormField, 'License plate number'), 'ABC123');
 
       await tester.tap(find.text('Finish and continue'));
@@ -144,9 +140,7 @@ void main() {
 
       // Fill fields
       await tester.enterText(find.widgetWithText(TextFormField, 'Full name'), 'Bob');
-      await tester.enterText(find.widgetWithText(TextFormField, 'Vehicle make'), 'Honda');
-      await tester.enterText(find.widgetWithText(TextFormField, 'Vehicle model'), 'Civic');
-      await tester.enterText(find.widgetWithText(TextFormField, 'Color'), 'Red');
+      await tester.enterText(find.widgetWithText(TextFormField, 'Vehicle'), 'Honda Civic');
       await tester.enterText(find.widgetWithText(TextFormField, 'License plate number'), 'XYZ789');
 
       await tester.tap(find.text('Finish and continue'));

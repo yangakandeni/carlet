@@ -92,7 +92,7 @@ class AuthService extends ChangeNotifier {
   }
 
   /// Update user profile fields that are allowed to change after onboarding.
-  /// Vehicle fields (carMake/carModel/carColor/carPlate) must not be
+  /// Vehicle fields (carMake/carModel/carPlate) must not be
   /// updated through this method to respect immutability rules.
   Future<AppUser> updateProfile({String? name, String? email, String? photoUrl}) async {
     final fbUser = _auth.currentUser;
@@ -220,7 +220,6 @@ class AuthService extends ChangeNotifier {
     required String name,
     required String carMake,
     required String carModel,
-    required String carColor,
     required String carPlate,
   }) async {
     final fbUser = _auth.currentUser;
@@ -237,7 +236,6 @@ class AuthService extends ChangeNotifier {
       'name': name,
       'carMake': carMake,
       'carModel': carModel,
-      'carColor': carColor,
       // Normalize license plate to uppercase without spaces to match
       // how reports store licensePlate (normalized in ReportService).
       'carPlate': carPlate.toUpperCase().replaceAll(' ', ''),

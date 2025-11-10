@@ -16,9 +16,7 @@ class OnboardingScreen extends StatefulWidget {
 class _OnboardingScreenState extends State<OnboardingScreen> {
   final _formKey = GlobalKey<FormState>();
   final _nameCtrl = TextEditingController();
-  final _makeCtrl = TextEditingController();
-  final _modelCtrl = TextEditingController();
-  final _colorCtrl = TextEditingController();
+  final _vehicleCtrl = TextEditingController();
   final _plateCtrl = TextEditingController();
   bool _loading = false;
   String? _error;
@@ -43,9 +41,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
   @override
   void dispose() {
     _nameCtrl.dispose();
-    _makeCtrl.dispose();
-    _modelCtrl.dispose();
-    _colorCtrl.dispose();
+    _vehicleCtrl.dispose();
     _plateCtrl.dispose();
     super.dispose();
   }
@@ -57,11 +53,16 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
       _error = null;
     });
     try {
+      // Parse vehicle input into make and model
+      final vehicleText = _vehicleCtrl.text.trim();
+      final parts = vehicleText.split(' ');
+      final carMake = parts.isNotEmpty ? parts[0] : '';
+      final carModel = parts.length > 1 ? parts.sublist(1).join(' ') : '';
+      
       await context.read<AuthService>().completeOnboarding(
             name: _nameCtrl.text.trim(),
-            carMake: _makeCtrl.text.trim(),
-            carModel: _modelCtrl.text.trim(),
-            carColor: _colorCtrl.text.trim(),
+            carMake: carMake,
+            carModel: carModel,
             carPlate: _plateCtrl.text.trim(),
           );
       if (!mounted) return;
@@ -101,29 +102,21 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
               ),
               const SizedBox(height: 12),
               TextFormField(
-                controller: _makeCtrl,
-                decoration: const InputDecoration(labelText: 'Vehicle make'),
-                validator: (v) => (v == null || v.trim().isEmpty)
-                    ? 'Please enter the vehicle make'
-                    : null,
-                textInputAction: TextInputAction.next,
-              ),
-              const SizedBox(height: 12),
-              TextFormField(
-                controller: _modelCtrl,
-                decoration: const InputDecoration(labelText: 'Vehicle model'),
-                validator: (v) => (v == null || v.trim().isEmpty)
-                    ? 'Please enter the vehicle model'
-                    : null,
-                textInputAction: TextInputAction.next,
-              ),
-              const SizedBox(height: 12),
-              TextFormField(
-                controller: _colorCtrl,
-                decoration: const InputDecoration(labelText: 'Color'),
-                validator: (v) => (v == null || v.trim().isEmpty)
-                    ? 'Please enter the vehicle color'
-                    : null,
+                controller: _vehicleCtrl,
+                decoration: const InputDecoration(
+                  labelText: 'Vehicle',
+                  hintText: 'e.g., Toyota Corolla',
+                ),
+                validator: (v) {
+                  if (v == null || v.trim().isEmpty) {
+                    return 'Please enter your vehicle (e.g., Toyota Corolla)';
+                  }
+                  final parts = v.trim().split(' ');
+                  if (parts.length < 2) {
+                    return 'Please enter both make and model (e.g., Toyota Corolla)';
+                  }
+                  return null;
+                },
                 textInputAction: TextInputAction.next,
               ),
               const SizedBox(height: 12),

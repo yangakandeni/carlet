@@ -9,17 +9,16 @@ service cloud.firestore {
 
       // Create: authenticated user may create their own document. If the
       // client sets onboardingComplete=true on create, require vehicle fields
-      // to be present and non-empty. Avoid use of keys().hasAny/hasAll to
-      // reduce rule evaluation complexity.
+      // to be present and non-empty.
+      // Avoid use of keys().hasAny/hasAll to reduce rule evaluation complexity.
       allow create: if request.auth != null && request.auth.uid == userId && (
         // If onboardingComplete is not being set to true on create, allow.
         !(request.resource.data.onboardingComplete == true)
         ||
-        // If onboardingComplete is true on create, require all vehicle fields
+        // If onboardingComplete is true on create, require vehicle fields
         (request.resource.data.onboardingComplete == true &&
           request.resource.data.carMake is string && request.resource.data.carMake != '' &&
           request.resource.data.carModel is string && request.resource.data.carModel != '' &&
-          request.resource.data.carColor is string && request.resource.data.carColor != '' &&
           request.resource.data.carPlate is string && request.resource.data.carPlate != ''
         )
       );
@@ -35,7 +34,6 @@ service cloud.firestore {
           // yield null, so we allow null (meaning not present) or equality.
           (request.resource.data.carMake == resource.data.carMake || request.resource.data.carMake == null) &&
           (request.resource.data.carModel == resource.data.carModel || request.resource.data.carModel == null) &&
-          (request.resource.data.carColor == resource.data.carColor || request.resource.data.carColor == null) &&
           (request.resource.data.carPlate == resource.data.carPlate || request.resource.data.carPlate == null) &&
           // Ensure onboardingComplete is not being turned off
           (request.resource.data.onboardingComplete == resource.data.onboardingComplete || request.resource.data.onboardingComplete == null)
@@ -52,7 +50,6 @@ service cloud.firestore {
           (request.resource.data.onboardingComplete == true &&
             request.resource.data.carMake is string && request.resource.data.carMake != '' &&
             request.resource.data.carModel is string && request.resource.data.carModel != '' &&
-            request.resource.data.carColor is string && request.resource.data.carColor != '' &&
             request.resource.data.carPlate is string && request.resource.data.carPlate != ''
           )
         ))
@@ -84,8 +81,8 @@ service cloud.firestore {
           !request.resource.data.keys().hasAny(['licensePlate']) ||
           !get(/databases/$(database)/documents/users/$(request.auth.uid)).data.keys().hasAny(['carPlate']) ||
           (
-            request.resource.data.licensePlate.toLowerCase().replace(' ', '') != 
-            get(/databases/$(database)/documents/users/$(request.auth.uid)).data.carPlate.toLowerCase().replace(' ', '')
+            request.resource.data.licensePlate.lower().replace(' ', '') != 
+            get(/databases/$(database)/documents/users/$(request.auth.uid)).data.carPlate.lower().replace(' ', '')
           )
         );
 
@@ -101,7 +98,7 @@ service cloud.firestore {
           && (
             // Prefer direct equality, otherwise compare lowercased versions
             get(/databases/$(database)/documents/users/$(request.auth.uid)).data.carPlate == resource.data.licensePlate
-            || get(/databases/$(database)/documents/users/$(request.auth.uid)).data.carPlate.toLowerCase() == resource.data.licensePlate.toLowerCase()
+            || get(/databases/$(database)/documents/users/$(request.auth.uid)).data.carPlate.lower() == resource.data.licensePlate.lower()
           )
           &&
           // The request must set status to 'resolved'

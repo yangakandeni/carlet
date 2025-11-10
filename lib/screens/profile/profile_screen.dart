@@ -144,7 +144,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
               const SizedBox(height: 8),
               Text('Make: ${user.carMake ?? "-"}'),
               Text('Model: ${user.carModel ?? "-"}'),
-              Text('Color: ${user.carColor ?? "-"}'),
               Text('Plate: ${user.carPlate ?? "-"}'),
               const SizedBox(height: 24),
               ElevatedButton(

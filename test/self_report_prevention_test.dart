@@ -199,7 +199,6 @@ class MockAuthService extends AuthService {
         onboardingComplete: true,
         carMake: 'Toyota',
         carModel: 'Camry',
-        carColor: 'Red',
         carPlate: hasCarPlate ? 'ABC123' : null,
         phoneNumber: '+1234567890',
       );

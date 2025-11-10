@@ -26,20 +26,4 @@ WARNING: sun.misc.Unsafe::arrayBaseOffset will be removed in a future release
 
 Issues? Report them at https://github.com/firebase/firebase-tools/issues and attach the *-debug.log files.
  
-i  To verify the phone number +27717662280, use the code 043947.
-i  firestore: Change detected, updating rules...
-⚠  ../../firestore.rules:87:48 - WARNING Invalid function name: toLowerCase.
-⚠  ../../firestore.rules:88:91 - WARNING Invalid function name: toLowerCase.
-⚠  ../../firestore.rules:104:94 - WARNING Invalid function name: toLowerCase.
-⚠  ../../firestore.rules:104:138 - WARNING Invalid function name: toLowerCase.
-✔  firestore: Rules updated.
-i  firestore: Change detected, updating rules...
-⚠  ../../firestore.rules:87:48 - WARNING Invalid function name: toLowerCase.
-⚠  ../../firestore.rules:88:91 - WARNING Invalid function name: toLowerCase.
-⚠  ../../firestore.rules:104:94 - WARNING Invalid function name: toLowerCase.
-⚠  ../../firestore.rules:104:138 - WARNING Invalid function name: toLowerCase.
-✔  firestore: Rules updated.
-i  To verify the phone number +27717662280, use the code 863651.
-i  To verify the phone number +27717662280, use the code 798624.
-i  To verify the phone number +27717662280, use the code 315682.
-i  To verify the phone number +27717662280, use the code 168402.
+i  To verify the phone number +27717662280, use the code 754789.

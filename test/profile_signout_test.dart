@@ -33,7 +33,6 @@ class TestAuthService extends AuthService {
       carPlate: _user!.carPlate,
       carModel: _user!.carModel,
       carMake: _user!.carMake,
-      carColor: _user!.carColor,
       photoUrl: photoUrl ?? _user!.photoUrl,
       deviceToken: _user!.deviceToken,
       onboardingComplete: _user!.onboardingComplete,
@@ -51,7 +50,6 @@ void main() {
       carPlate: 'ABC123',
       carModel: 'Model',
       carMake: 'Make',
-      carColor: 'Blue',
       onboardingComplete: true,
     );
 
