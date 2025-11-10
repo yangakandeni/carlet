@@ -50,10 +50,8 @@ class Report {
       licensePlate: map['licensePlate'] as String?,
       message: map['message'] as String?,
       status: (map['status'] as String?) ?? 'open',
-      timestamp: DateTime.tryParse(map['timestamp'] as String? ?? '') ??
-          DateTime.fromMillisecondsSinceEpoch(
-              (map['timestamp'] is num) ? (map['timestamp'] as num).toInt() : 0,
-              isUtc: true),
+      // Use parseDate to handle Timestamp, String, numeric epoch, or DateTime.
+      timestamp: parseDate(map['timestamp']) ?? DateTime.fromMillisecondsSinceEpoch(0, isUtc: true),
       resolvedAt: parseDate(map['resolvedAt']),
       expireAt: parseDate(map['expireAt']),
       anonymous: (map['anonymous'] as bool?) ?? false,

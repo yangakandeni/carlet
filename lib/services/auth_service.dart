@@ -70,6 +70,17 @@ class AuthService extends ChangeNotifier {
       smsCode: smsCode,
     );
     final cred = await _auth.signInWithCredential(credential);
+    // Ensure the newly-signed-in user's ID token is minted and available to
+    // other Firebase services (Firestore) before we attempt to write the
+    // user's document. This avoids a race where the Firestore request
+    // arrives without auth context and triggers rules evaluation errors.
+    try {
+      await cred.user?.getIdToken(true);
+    } catch (_) {
+      // Ignored: proceed to ensure user doc; if Firestore rejects due to
+      // missing auth, the caller will receive the error which we don't
+      // swallow here.
+    }
     return _ensureUserDoc(cred.user!);
   }
 

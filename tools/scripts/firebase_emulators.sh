@@ -82,7 +82,7 @@ ports_status() {
     local status="●"
     local color_start=""
     local color_end=""
-i
+    
     # Check if port is listening (try nc first, fallback to lsof)
     if nc -z "$host" "$p" 2>/dev/null || lsof -i :"$p" >/dev/null 2>&1; then
       status="✓ RUNNING"
@@ -114,10 +114,13 @@ kill_port_processes() {
     local p="${ports[$i]}"
     local name="${port_names[$i]}"
     local pids
+    # Collect PIDs and normalize newlines to spaces so printing stays on one line
     pids=$(lsof -ti :"$p" 2>/dev/null || true)
     if [[ -n "$pids" ]]; then
-      echo "[INFO] $name (127.0.0.1:$p) is in use by PID(s): $pids - terminating..."
-      echo "$pids" | xargs kill -9 2>/dev/null || true
+      # Convert newline-separated pid list into a single space-separated string
+      pids_single=$(printf '%s' "$pids" | tr '\n' ' ' | sed -E 's/[[:space:]]+$//')
+      echo "[INFO] $name (127.0.0.1:$p) is in use by PID(s): $pids_single - terminating..."
+      printf '%s\n' "$pids" | xargs kill -9 2>/dev/null || true
       killed=1
       sleep 0.5
     fi

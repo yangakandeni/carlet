@@ -13,7 +13,7 @@ import 'package:carlet/models/user_model.dart';
 
 class MockAuthService extends AuthService {
   MockAuthService() : super.noInit();
-  AppUser? _u = const AppUser(id: 'u1');
+  final AppUser? _u = const AppUser(id: 'u1');
   @override
   AppUser? get currentUser => _u;
 }

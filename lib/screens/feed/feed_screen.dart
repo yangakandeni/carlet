@@ -51,6 +51,12 @@ class _FeedScreenState extends State<FeedScreen> {
     return StreamBuilder<List<Report>>(
       stream: reportService.streamReports(limit: 200),
       builder: (context, snapshot) {
+        if (snapshot.hasError) {
+          // Show a helpful error instead of an indefinite loading spinner
+          return Center(
+            child: Text('Failed to load reports: ${snapshot.error}'),
+          );
+        }
         if (!snapshot.hasData) {
           return const Center(child: CircularProgressIndicator());
         }
