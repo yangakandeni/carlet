@@ -6,8 +6,10 @@ import 'package:carlet/services/auth_service.dart';
 import 'package:carlet/services/report_service.dart';
 import 'package:carlet/services/comment_service.dart';
 import 'package:carlet/widgets/report_card.dart';
+import 'package:carlet/widgets/carlet_button.dart';
 import 'package:carlet/utils/snackbar.dart';
 import 'package:carlet/screens/comments/comments_screen.dart';
+import 'package:carlet/screens/report/create_report_screen.dart';
 
 class FeedScreen extends StatefulWidget {
   const FeedScreen({super.key});
@@ -21,14 +23,49 @@ class _FeedScreenState extends State<FeedScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
     final reportService = ReportService();
     return StreamBuilder<List<Report>>(
       stream: reportService.streamReports(limit: 200),
       builder: (context, snapshot) {
         if (snapshot.hasError) {
-          // Show a helpful error instead of an indefinite loading spinner
+          // Show error state with retry button
           return Center(
-            child: Text('Failed to load reports: ${snapshot.error}'),
+            child: Padding(
+              padding: const EdgeInsets.all(24.0),
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Icon(
+                    Icons.error_outline,
+                    size: 64,
+                    color: theme.colorScheme.error,
+                  ),
+                  const SizedBox(height: 16),
+                  Text(
+                    'Failed to load alerts',
+                    style: theme.textTheme.titleLarge,
+                    textAlign: TextAlign.center,
+                  ),
+                  const SizedBox(height: 8),
+                  Text(
+                    '${snapshot.error}',
+                    style: theme.textTheme.bodyMedium?.copyWith(
+                      color: theme.colorScheme.onSurface.withValues(alpha: 0.6),
+                    ),
+                    textAlign: TextAlign.center,
+                  ),
+                  const SizedBox(height: 24),
+                  CarletButton.outlined(
+                    text: 'Retry',
+                    icon: const Icon(Icons.refresh),
+                    onPressed: () {
+                      setState(() {}); // Trigger rebuild to retry stream
+                    },
+                  ),
+                ],
+              ),
+            ),
           );
         }
         if (!snapshot.hasData) {
@@ -36,8 +73,65 @@ class _FeedScreenState extends State<FeedScreen> {
         }
         final reports = snapshot.data!;
         if (reports.isEmpty) {
-          return const Center(
-            child: Text('No alerts yet. Be the first to report!'),
+          // Empty state with improved visual hierarchy
+          return Center(
+            child: Padding(
+              padding: const EdgeInsets.all(24.0),
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Text(
+                    'No alerts yet',
+                    style: theme.textTheme.titleMedium?.copyWith(
+                      fontWeight: FontWeight.bold,
+                    ),
+                    textAlign: TextAlign.center,
+                  ),
+                  const SizedBox(height: 6),
+                  Text(
+                    'Be the first to report!',
+                    style: theme.textTheme.bodySmall?.copyWith(
+                      color: theme.colorScheme.onSurface.withValues(alpha: 0.6),
+                    ),
+                    textAlign: TextAlign.center,
+                  ),
+                  const SizedBox(height: 28),
+                  // CTA styled to be rounded and shrink-to-fit text width
+                  Theme(
+                    data: Theme.of(context).copyWith(
+                      elevatedButtonTheme: ElevatedButtonThemeData(
+                        style: ButtonStyle(
+                          shape: WidgetStateProperty.all<OutlinedBorder>(
+                            const StadiumBorder(),
+                          ),
+                          minimumSize: WidgetStateProperty.all(const Size(0, 44)),
+                          padding: WidgetStateProperty.all(const EdgeInsets.symmetric(horizontal: 20, vertical: 12)),
+                          backgroundColor: WidgetStateProperty.all(theme.colorScheme.primary),
+                          foregroundColor: WidgetStateProperty.all(theme.colorScheme.onPrimary),
+                        ),
+                      ),
+                    ),
+                    child: IntrinsicWidth(
+                      child: Center(
+                        child: CarletButton.primary(
+                          text: 'Post',
+                          onPressed: () async {
+                            final navigator = Navigator.of(context);
+                            final result = await navigator.pushNamed(
+                              CreateReportScreen.routeName,
+                            );
+                            if (!context.mounted) return;
+                            if (result == true) {
+                              AppSnackbar.showSuccess(context, 'Report posted.');
+                            }
+                          },
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
           );
         }
         return ListView.separated(

@@ -11,7 +11,7 @@ import 'package:carlet/models/user_model.dart';
 
 class MockAuthService extends AuthService {
   MockAuthService() : super.noInit();
-  final AppUser? _u = const AppUser(id: 'u1');
+  final AppUser _u = const AppUser(id: 'u1');
   @override
   AppUser? get currentUser => _u;
 }
@@ -83,8 +83,8 @@ void main() {
     await tester.tap(find.byType(FloatingActionButton));
     await tester.pumpAndSettle();
 
-    // Ensure CreateReportScreen is present
-    expect(find.text('Report car'), findsOneWidget);
+  // Ensure CreateReportScreen is present (check for a known field)
+  expect(find.widgetWithText(TextField, 'License plate'), findsOneWidget);
 
     // Enter fields and submit
     await tester.enterText(find.widgetWithText(TextField, 'License plate'), 'ABC123');

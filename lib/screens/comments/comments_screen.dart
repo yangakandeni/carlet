@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 
 import 'package:carlet/models/report_model.dart';
@@ -69,17 +70,20 @@ class _CommentsScreenState extends State<CommentsScreen> {
       builder: (context) => ReactionPickerDialog(
         comment: comment,
         currentUserId: user.id,
-        onReactionSelected: (reaction) async {
-          try {
-            await _commentService.addReaction(
-              commentId: comment.id,
-              userId: user.id,
-              reaction: reaction,
-            );
-          } catch (e) {
+        // Use then/catchError but capture a stable ScaffoldMessengerState
+        // before the async call so we don't use BuildContext across async gaps.
+        onReactionSelected: (reaction) {
+          final messenger = ScaffoldMessenger.of(context);
+          _commentService
+              .addReaction(
+            commentId: comment.id,
+            userId: user.id,
+            reaction: reaction,
+          )
+              .catchError((e) {
             if (!mounted) return;
-            AppSnackbar.showError(context, 'Failed to add reaction: $e');
-          }
+            messenger.showSnackBar(SnackBar(content: Text('Failed to add reaction: $e')));
+          });
         },
       ),
     );
@@ -93,7 +97,13 @@ class _CommentsScreenState extends State<CommentsScreen> {
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Comments'),
+        // Invisible AppBar: transparent background, zero elevation
+        systemOverlayStyle: Theme.of(context).brightness == Brightness.dark
+            ? SystemUiOverlayStyle.light
+            : SystemUiOverlayStyle.dark,
+        backgroundColor: Colors.transparent,
+        elevation: 0,
+        surfaceTintColor: Colors.transparent,
       ),
       body: Column(
         children: [
@@ -142,13 +152,17 @@ class _CommentsScreenState extends State<CommentsScreen> {
                         });
                       },
                       onLongPress: (c) => _showReactionPicker(c),
-                      onDelete: (commentId) async {
-                        await _commentService.deleteComment(
-                          commentId,
-                          widget.report.id,
-                        );
-                        if (!mounted) return;
-                        AppSnackbar.showSuccess(context, 'Comment deleted');
+                      onDelete: (commentId) {
+                        final messenger = ScaffoldMessenger.of(context);
+                        _commentService
+                            .deleteComment(commentId, widget.report.id)
+                            .then((_) {
+                          if (!mounted) return;
+                          messenger.showSnackBar(const SnackBar(content: Text('Comment deleted')));
+                        }).catchError((e) {
+                          if (!mounted) return;
+                          messenger.showSnackBar(SnackBar(content: Text('Failed to delete comment: $e')));
+                        });
                       },
                     );
                   },
@@ -163,7 +177,7 @@ class _CommentsScreenState extends State<CommentsScreen> {
                 color: theme.colorScheme.surface,
                 boxShadow: [
                   BoxShadow(
-                    color: Colors.black.withOpacity(0.1),
+                    color: Colors.black.withValues(alpha: 0.1),
                     blurRadius: 4,
                     offset: const Offset(0, -2),
                   ),
@@ -242,22 +256,22 @@ class _CommentsScreenState extends State<CommentsScreen> {
           if (isResolved)
             Container(
               padding: const EdgeInsets.all(16),
-              color: theme.colorScheme.surfaceVariant,
+                color: theme.colorScheme.surfaceContainerHighest,
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  Icon(
-                    Icons.lock_outline,
-                    size: 18,
-                    color: theme.colorScheme.onSurfaceVariant,
-                  ),
-                  const SizedBox(width: 8),
-                  Text(
-                    'This post is resolved. Comments are read-only.',
-                    style: theme.textTheme.bodySmall?.copyWith(
+                    Icon(
+                      Icons.lock_outline,
+                      size: 18,
                       color: theme.colorScheme.onSurfaceVariant,
                     ),
-                  ),
+                  const SizedBox(width: 8),
+                    Text(
+                      'This post is resolved. Comments are read-only.',
+                      style: theme.textTheme.bodySmall?.copyWith(
+                        color: theme.colorScheme.onSurfaceVariant,
+                      ),
+                    ),
                 ],
               ),
             ),
@@ -365,7 +379,7 @@ class _CommentTile extends StatelessWidget {
                           vertical: 4,
                         ),
                         decoration: BoxDecoration(
-                          color: theme.colorScheme.surfaceVariant,
+                          color: theme.colorScheme.surfaceContainerHighest,
                           borderRadius: BorderRadius.circular(12),
                         ),
                         child: Row(
@@ -477,7 +491,7 @@ class _CommentTile extends StatelessWidget {
                               vertical: 2,
                             ),
                             decoration: BoxDecoration(
-                              color: theme.colorScheme.surfaceVariant,
+                              color: theme.colorScheme.surfaceContainerHighest,
                               borderRadius: BorderRadius.circular(10),
                             ),
                             child: Row(
@@ -518,6 +532,6 @@ class _CommentTile extends StatelessWidget {
     if (diff.inDays < 1) return '${diff.inHours}h ago';
     if (diff.inDays < 7) return '${diff.inDays}d ago';
 
-    return '${timestamp.toLocal().toString().split(' ')[0]}';
+  return timestamp.toLocal().toString().split(' ')[0];
   }
 }

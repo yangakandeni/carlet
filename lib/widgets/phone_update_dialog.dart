@@ -9,6 +9,7 @@ import 'package:pinput/pinput.dart';
 
 import 'package:carlet/services/auth_service.dart';
 import 'package:carlet/utils/phone_utils.dart';
+import 'package:carlet/utils/ui_constants.dart';
 
 /// A dialog that allows users to update their phone number with OTP verification.
 class PhoneUpdateDialog extends StatefulWidget {
@@ -211,6 +212,7 @@ class _PhoneUpdateDialogState extends State<PhoneUpdateDialog> {
                     borderRadius: BorderRadius.circular(12),
                   ),
                   prefixIcon: const Icon(Icons.phone),
+                  contentPadding: const EdgeInsets.symmetric(vertical: 12, horizontal: 12),
                 ),
                 initialCountryCode: 'ZA',
                 disableLengthCheck: true,
@@ -225,6 +227,7 @@ class _PhoneUpdateDialogState extends State<PhoneUpdateDialog> {
               const SizedBox(height: 16),
               ElevatedButton(
                 onPressed: _loading ? null : _sendCode,
+                style: ElevatedButton.styleFrom(minimumSize: Size.fromHeight(UIConstants.kButtonMinHeight)),
                 child: _loading
                     ? const SizedBox(
                         width: 20,

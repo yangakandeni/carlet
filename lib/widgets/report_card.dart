@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 
 import 'package:carlet/models/report_model.dart';
+import 'package:carlet/widgets/carlet_badge.dart';
+import 'package:carlet/widgets/carlet_card.dart';
 
 class ReportCard extends StatelessWidget {
   final Report report;
@@ -29,171 +31,154 @@ class ReportCard extends StatelessWidget {
       final hours = diff.inHours;
       return 'Will be deleted in ${hours}h';
     }
-    return Card(
-      clipBehavior: Clip.antiAlias,
+
+    // Status badge colors
+    final isOpen = report.status == 'open';
+    final badgeColor = isOpen 
+        ? theme.colorScheme.error.withValues(alpha: 0.12)
+        : theme.colorScheme.secondaryContainer;
+    final badgeTextColor = isOpen 
+        ? theme.colorScheme.error 
+        : theme.colorScheme.onSecondaryContainer;
+
+    return CarletCard(
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          if (report.photoUrl != null)
-            AspectRatio(
-              aspectRatio: 16 / 9,
-              child: Image.network(report.photoUrl!, fit: BoxFit.cover),
+          if (report.photoUrl != null) ...[
+            ClipRRect(
+              borderRadius: BorderRadius.circular(8),
+              child: AspectRatio(
+                aspectRatio: 16 / 9,
+                child: Image.network(report.photoUrl!, fit: BoxFit.cover),
+              ),
             ),
-          Padding(
-            padding: const EdgeInsets.all(16),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Row(
-                  children: [
-                    if (report.licensePlate != null &&
-                        report.licensePlate!.isNotEmpty)
-                      Container(
-                        padding: const EdgeInsets.symmetric(
-                            horizontal: 10, vertical: 6),
-                        decoration: BoxDecoration(
-                          color: theme.colorScheme.primaryContainer,
-                          borderRadius: BorderRadius.circular(6),
-                        ),
-                        child: Text(
-                          report.licensePlate!,
-                          style: TextStyle(
-                              color: theme.colorScheme.onPrimaryContainer,
-                              fontWeight: FontWeight.bold,
-                              fontSize: 16),
-                        ),
-                      ),
-                    const Spacer(),
-                    Container(
-                      padding: const EdgeInsets.symmetric(
-                          horizontal: 10, vertical: 6),
-                      decoration: BoxDecoration(
-                        color: report.status == 'open'
-                            ? theme.colorScheme.errorContainer
-                            : theme.colorScheme.secondaryContainer,
-                        borderRadius: BorderRadius.circular(6),
-                      ),
-                      child: Text(
-                        report.status.toUpperCase(),
-                        style: TextStyle(
-                          color: report.status == 'open'
-                              ? theme.colorScheme.onErrorContainer
-                              : theme.colorScheme.onSecondaryContainer,
-                          fontWeight: FontWeight.bold,
-                          fontSize: 12,
-                          letterSpacing: 0.5,
-                        ),
-                      ),
-                    ),
-                  ],
+            const SizedBox(height: 12),
+          ],
+          Row(
+            children: [
+              if (report.licensePlate != null &&
+                  report.licensePlate!.isNotEmpty)
+                CarletBadge(
+                  text: report.licensePlate!,
+                  backgroundColor: theme.colorScheme.primaryContainer,
+                  textColor: theme.colorScheme.onPrimaryContainer,
                 ),
-                if ((report.message ?? '').isNotEmpty) ...[
-                  const SizedBox(height: 16),
-                  Text(
-                    report.message!,
-                    style: theme.textTheme.titleMedium?.copyWith(
-                      fontWeight: FontWeight.w500,
-                      height: 1.4,
-                    ),
-                  ),
-                ],
-                const SizedBox(height: 12),
-                // Social engagement row (likes and comments)
-                Row(
-                  children: [
-                    InkWell(
-                      onTap: report.status == 'resolved' ? null : onLike,
-                      borderRadius: BorderRadius.circular(20),
-                      child: Padding(
-                        padding: const EdgeInsets.symmetric(
-                            horizontal: 8, vertical: 4),
-                        child: Row(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            Icon(
-                              Icons.favorite,
-                              size: 20,
-                              color: report.status == 'resolved'
-                                  ? Colors.grey
-                                  : theme.colorScheme.primary,
-                            ),
-                            if (report.likeCount > 0) ...[
-                              const SizedBox(width: 4),
-                              Text(
-                                '${report.likeCount}',
-                                style: theme.textTheme.bodySmall?.copyWith(
-                                  color: report.status == 'resolved'
-                                      ? Colors.grey
-                                      : theme.colorScheme.onSurface,
-                                ),
-                              ),
-                            ],
-                          ],
+              const Spacer(),
+              CarletBadge(
+                text: report.status,
+                backgroundColor: badgeColor,
+                textColor: badgeTextColor,
+              ),
+            ],
+          ),
+          if ((report.message ?? '').isNotEmpty) ...[
+            const SizedBox(height: 12),
+            Text(
+              report.message!,
+              style: theme.textTheme.bodyLarge?.copyWith(
+                height: 1.4,
+              ),
+            ),
+          ],
+          const SizedBox(height: 12),
+          // Social engagement row (likes and comments)
+          Row(
+            children: [
+              InkWell(
+                onTap: report.status == 'resolved' ? null : onLike,
+                borderRadius: BorderRadius.circular(20),
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(
+                      horizontal: 8, vertical: 4),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Icon(
+                        Icons.favorite,
+                        size: 20,
+                        color: report.status == 'resolved'
+                            ? theme.colorScheme.onSurface.withValues(alpha: 0.4)
+                            : theme.colorScheme.primary,
+                      ),
+                      const SizedBox(width: 4),
+                      Text(
+                        '${report.likeCount}',
+                        style: theme.textTheme.bodySmall?.copyWith(
+                          color: report.status == 'resolved'
+                              ? theme.colorScheme.onSurface.withValues(alpha: 0.4)
+                              : theme.colorScheme.onSurface.withValues(alpha: 0.8),
                         ),
                       ),
-                    ),
-                    const SizedBox(width: 8),
-                    InkWell(
-                      onTap: report.status == 'resolved' ? null : onComment,
-                      borderRadius: BorderRadius.circular(20),
-                      child: Padding(
-                        padding: const EdgeInsets.symmetric(
-                            horizontal: 8, vertical: 4),
-                        child: Row(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            Icon(
-                              Icons.comment,
-                              size: 20,
-                              color: report.status == 'resolved'
-                                  ? Colors.grey
-                                  : theme.colorScheme.primary,
-                            ),
-                            if (report.commentCount > 0) ...[
-                              const SizedBox(width: 4),
-                              Text(
-                                '${report.commentCount}',
-                                style: theme.textTheme.bodySmall?.copyWith(
-                                  color: report.status == 'resolved'
-                                      ? Colors.grey
-                                      : theme.colorScheme.onSurface,
-                                ),
-                              ),
-                            ],
-                          ],
+                    ],
+                  ),
+                ),
+              ),
+              const SizedBox(width: 8),
+              InkWell(
+                onTap: report.status == 'resolved' ? null : onComment,
+                borderRadius: BorderRadius.circular(20),
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(
+                      horizontal: 8, vertical: 4),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Icon(
+                        Icons.comment_outlined,
+                        size: 20,
+                        color: report.status == 'resolved'
+                            ? theme.colorScheme.onSurface.withValues(alpha: 0.4)
+                            : theme.colorScheme.onSurface.withValues(alpha: 0.8),
+                      ),
+                      const SizedBox(width: 4),
+                      Text(
+                        '${report.commentCount}',
+                        style: theme.textTheme.bodySmall?.copyWith(
+                          color: report.status == 'resolved'
+                              ? theme.colorScheme.onSurface.withValues(alpha: 0.4)
+                              : theme.colorScheme.onSurface.withValues(alpha: 0.8),
                         ),
                       ),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 12),
-                Text(
-                  'Reported: ${report.timestamp.toLocal().toString().split('.')[0]}',
-                  style: theme.textTheme.bodySmall,
-                ),
-                const SizedBox(height: 8),
-                if (onResolve != null && report.status == 'open')
-                  Align(
-                    alignment: Alignment.centerRight,
-                    child: FilledButton.icon(
-                      onPressed: onResolve,
-                      icon: const Icon(Icons.check_circle_outline),
-                      label: const Text('Mark resolved'),
-                    ),
+                    ],
                   ),
-                // Show a small hint when the report has been resolved and an
-                // expiry is known.
-                if (report.status == 'resolved' && report.expireAt != null)
-                  Padding(
-                    padding: const EdgeInsets.only(top: 8.0),
-                    child: Text(
-                      deletionHint() ?? '',
-                      style: theme.textTheme.bodySmall,
-                    ),
-                  ),
-              ],
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 12),
+          Text(
+            'Reported: ${report.timestamp.toLocal().toString().split('.')[0]}',
+            style: theme.textTheme.bodySmall?.copyWith(
+              color: theme.colorScheme.onSurface.withValues(alpha: 0.6),
             ),
           ),
+          if (onResolve != null && report.status == 'open') ...[
+            const SizedBox(height: 12),
+            Align(
+              alignment: Alignment.centerRight,
+              child: FilledButton.icon(
+                onPressed: onResolve,
+                icon: const Icon(Icons.check_circle_outline, size: 18),
+                label: const Text('Mark resolved'),
+                style: FilledButton.styleFrom(
+                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+                ),
+              ),
+            ),
+          ],
+          // Show a small hint when the report has been resolved and an
+          // expiry is known.
+          if (report.status == 'resolved' && report.expireAt != null)
+            Padding(
+              padding: const EdgeInsets.only(top: 8.0),
+              child: Text(
+                deletionHint() ?? '',
+                style: theme.textTheme.bodySmall?.copyWith(
+                  color: theme.colorScheme.onSurface.withValues(alpha: 0.5),
+                ),
+              ),
+            ),
         ],
       ),
     );

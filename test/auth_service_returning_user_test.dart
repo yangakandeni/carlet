@@ -32,7 +32,7 @@ void main() {
   
   test('AppUser model should default onboardingComplete to false for new users', () {
     // New users should have onboardingComplete default to false
-    final newUser = AppUser(
+    const newUser = AppUser(
       id: 'test-user-1',
       name: 'Test User',
     );
@@ -43,7 +43,7 @@ void main() {
   
   test('AppUser model should preserve onboardingComplete true for returning users', () {
     // Returning users with onboarding complete should maintain that status
-    final returningUser = AppUser(
+    const returningUser = AppUser(
       id: 'test-user-2',
       name: 'Returning User',
       onboardingComplete: true,

@@ -12,6 +12,10 @@ dependencies:
     sdk: flutter
   cupertino_icons: ^1.0.6
 
+  # Typography
+  google_fonts: ^6.1.0
+  path_provider: ^2.1.5
+
   # Firebase
   firebase_core: ^4.2.0
   firebase_auth: ^6.1.1

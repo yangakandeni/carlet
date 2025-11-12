@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 
 import 'package:carlet/services/auth_service.dart';
@@ -6,6 +7,7 @@ import 'package:carlet/models/user_model.dart';
 import 'package:carlet/utils/snackbar.dart';
 import 'package:carlet/screens/auth/login_screen.dart';
 import 'package:carlet/widgets/phone_update_dialog.dart';
+import 'package:carlet/utils/ui_constants.dart';
 
 class ProfileScreen extends StatefulWidget {
   static const routeName = '/profile';
@@ -74,7 +76,15 @@ class _ProfileScreenState extends State<ProfileScreen> {
     final auth = context.watch<AuthService>();
     final AppUser? user = auth.currentUser;
     return Scaffold(
-      appBar: AppBar(title: const Text('Profile')),
+      appBar: AppBar(
+        // Invisible AppBar: transparent background, zero elevation
+        systemOverlayStyle: Theme.of(context).brightness == Brightness.dark
+            ? SystemUiOverlayStyle.light
+            : SystemUiOverlayStyle.dark,
+        backgroundColor: Colors.transparent,
+        elevation: 0,
+        surfaceTintColor: Colors.transparent,
+      ),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(16),
         child: Column(
@@ -87,6 +97,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 decoration: const InputDecoration(
                   labelText: 'Full name',
                   border: OutlineInputBorder(),
+                  contentPadding: EdgeInsets.symmetric(vertical: 12, horizontal: 12),
                 ),
                 textInputAction: TextInputAction.next,
               ),
@@ -97,6 +108,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   labelText: 'Email address',
                   hintText: 'Enter your email',
                   border: OutlineInputBorder(),
+                  contentPadding: EdgeInsets.symmetric(vertical: 12, horizontal: 12),
                 ),
                 keyboardType: TextInputType.emailAddress,
                 textInputAction: TextInputAction.done,
@@ -148,6 +160,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
               const SizedBox(height: 24),
               ElevatedButton(
                 onPressed: _loading ? null : _save,
+                style: ElevatedButton.styleFrom(minimumSize: Size.fromHeight(UIConstants.kButtonMinHeight)),
                 child: _loading ? const CircularProgressIndicator() : const Text('Save'),
               ),
               const SizedBox(height: 12),

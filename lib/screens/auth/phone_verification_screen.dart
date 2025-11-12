@@ -1,19 +1,26 @@
 import 'dart:async';
 
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 import 'package:firebase_auth/firebase_auth.dart' as fb;
+// intl_phone_field is no longer used in this screen (LoginScreen supplies the phone).
+import 'package:pinput/pinput.dart';
 // ignore: depend_on_referenced_packages
 import 'package:intl_phone_field/intl_phone_field.dart';
-import 'package:pinput/pinput.dart';
+import 'package:carlet/utils/ui_constants.dart';
 
 import 'package:carlet/services/auth_service.dart';
+import 'package:carlet/widgets/invisible_app_bar.dart';
 import 'package:carlet/screens/home/home_screen.dart';
 import 'package:carlet/screens/auth/onboarding_screen.dart';
 import 'package:carlet/utils/phone_utils.dart';
 
 class PhoneVerificationScreen extends StatefulWidget {
+  // Optional initial phone number. If provided the screen will prefill and
+  // automatically start verification; otherwise the user may enter a number.
   final String? initialPhone;
 
   const PhoneVerificationScreen({super.key, this.initialPhone});
@@ -30,11 +37,21 @@ class _PhoneVerificationScreenState extends State<PhoneVerificationScreen> {
     // If a test or caller provided an initial phone, prefill the controller
     // and the internal complete number so tests can avoid typing into the
     // IntlPhoneField.
+    // If an initial phone was provided, prefill and send the code automatically.
     if (widget.initialPhone != null && widget.initialPhone!.isNotEmpty) {
       _phoneController.text = widget.initialPhone!;
       // Try to pre-normalize the provided phone for display and ease of
       // testing. Fall back to the raw value if normalization fails.
       _completePhoneNumber = normalizePhone(widget.initialPhone!) ?? widget.initialPhone!;
+      // Automatically send the verification code so the user lands
+      // directly on the OTP entry UI.
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (!mounted) return;
+        // Only attempt to send if we haven't already sent a code.
+        if (!_codeSent) {
+          _sendCode();
+        }
+      });
     }
   }
 
@@ -57,6 +74,12 @@ class _PhoneVerificationScreenState extends State<PhoneVerificationScreen> {
   }
 
   void _startResendCountdown() {
+    // In tests, avoid starting a periodic timer (pumpAndSettle can hang).
+    if (Platform.environment.containsKey('FLUTTER_TEST')) {
+      setState(() => _resendCountdown = 0);
+      return;
+    }
+
     setState(() => _resendCountdown = 60);
     _countdownTimer?.cancel();
     _countdownTimer = Timer.periodic(const Duration(seconds: 1), (timer) {
@@ -93,9 +116,11 @@ class _PhoneVerificationScreenState extends State<PhoneVerificationScreen> {
     try {
       // store normalized number for later display
       _completePhoneNumber = normalized;
+      debugPrint('PhoneVerification: sending code to $_completePhoneNumber');
       final id = await context.read<AuthService>().startPhoneVerification(
             _completePhoneNumber,
           );
+      debugPrint('PhoneVerification: startPhoneVerification returned id=$id');
       setState(() {
         _verificationId = id;
         _codeSent = true;
@@ -190,152 +215,145 @@ class _PhoneVerificationScreenState extends State<PhoneVerificationScreen> {
     );
 
     return Scaffold(
-      appBar: AppBar(
-        leading: _codeSent
-            ? IconButton(
-                icon: const Icon(Icons.arrow_back),
-                onPressed: () => setState(() {
-                  _codeSent = false;
-                  _verificationId = null;
-                  _pinController.clear();
-                  _error = null;
-                  _countdownTimer?.cancel();
-                  _resendCountdown = 0;
-                }),
-              )
-            : null,
+      appBar: InvisibleAppBar(
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back),
+          onPressed: () => Navigator.of(context).maybePop(),
+        ),
       ),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(24),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-            if (!_codeSent) ...[
-              Text(
-                'Login or Signup',
-                style: theme.textTheme.headlineSmall,
-                textAlign: TextAlign.center,
-              ),
-              const SizedBox(height: 8),
-              Text(
-                'We\'ll send you a security code to verify it\'s you',
-                style: theme.textTheme.bodyMedium?.copyWith(
-                  color: theme.colorScheme.onSurface.withValues(alpha: 0.6),
-                ),
-                textAlign: TextAlign.center,
-              ),
-              const SizedBox(height: 32),
-              IntlPhoneField(
-                controller: _phoneController,
-                decoration: InputDecoration(
-                  labelText: 'Phone Number',
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(12),
+        child: Center(
+          child: ConstrainedBox(
+            constraints: const BoxConstraints(maxWidth: 480),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: <Widget>[
+                const SizedBox(height: 24),
+                if (!_codeSent) ...[
+                  Text(
+                    'Login or Signup',
+                    style: theme.textTheme.headlineSmall,
+                    textAlign: TextAlign.center,
                   ),
-                  prefixIcon: const Icon(Icons.phone),
-                ),
-                initialCountryCode: 'ZA',
-                disableLengthCheck: true,
-                inputFormatters: [
-                  FilteringTextInputFormatter.digitsOnly,
-                  // Allow either local 10-digit numbers (starting with 0) or
-                  // international without plus (e.g. 277...) which is 11 digits
-                  LengthLimitingTextInputFormatter(11),
-                ],
-                onChanged: (phone) {
-                  // Store complete number for Firebase (without modifying controller)
-                  _completePhoneNumber = phone.completeNumber;
-                },
-              ),
-              const SizedBox(height: 24),
-              ElevatedButton.icon(
-                onPressed: _loading ? null : _sendCode,
-                icon: _loading
-                    ? const SizedBox(
-                        width: 20,
-                        height: 20,
-                        child: CircularProgressIndicator(strokeWidth: 2),
-                      )
-                    : const Icon(Icons.send),
-                label: Text(_loading ? 'Sending...' : 'Get OTP'),
-                style: ElevatedButton.styleFrom(
-                  padding: const EdgeInsets.symmetric(vertical: 16),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                ),
-              ),
-            ] else ...[
-              const SizedBox(height: 24),
-              Text(
-                'Enter verification code',
-                style: theme.textTheme.headlineSmall,
-                textAlign: TextAlign.center,
-              ),
-              const SizedBox(height: 8),
-              Text(
-                'We sent a code to $_completePhoneNumber',
-                style: theme.textTheme.bodyMedium?.copyWith(
-                  color: theme.colorScheme.onSurface.withValues(alpha: 0.6),
-                ),
-                textAlign: TextAlign.center,
-              ),
-              const SizedBox(height: 32),
-              Pinput(
-                controller: _pinController,
-                length: 6,
-                defaultPinTheme: defaultPinTheme,
-                focusedPinTheme: focusedPinTheme,
-                submittedPinTheme: submittedPinTheme,
-                errorPinTheme: errorPinTheme,
-                forceErrorState: _error != null,
-                pinputAutovalidateMode: PinputAutovalidateMode.onSubmit,
-                showCursor: true,
-                onCompleted: _verifyCode,
-                enabled: !_loading,
-              ),
-              const SizedBox(height: 24),
-              if (_loading)
-                const Center(child: CircularProgressIndicator())
-              else
-                TextButton.icon(
-                  onPressed: _resendCountdown > 0 ? null : _sendCode,
-                  icon: const Icon(Icons.refresh),
-                  label: Text(
-                    _resendCountdown > 0
-                        ? 'Resend code in ${_resendCountdown}s'
-                        : 'Resend code',
-                  ),
-                ),
-            ],
-            if (_error != null) ...[
-              const SizedBox(height: 16),
-              Container(
-                padding: const EdgeInsets.all(12),
-                decoration: BoxDecoration(
-                  color: theme.colorScheme.errorContainer,
-                  borderRadius: BorderRadius.circular(8),
-                ),
-                child: Row(
-                  children: [
-                    Icon(
-                      Icons.error_outline,
-                      color: theme.colorScheme.error,
+                  const SizedBox(height: 8),
+                  Text(
+                    'We\'ll send you an OTP to verify it\'s you',
+                    style: theme.textTheme.bodyMedium?.copyWith(
+                      color: theme.colorScheme.onSurface.withValues(alpha: 0.6),
                     ),
-                    const SizedBox(width: 8),
-                    Expanded(
-                      child: Text(
-                        _error!,
-                        style: TextStyle(
-                          color: theme.colorScheme.onErrorContainer,
-                        ),
+                    textAlign: TextAlign.center,
+                  ),
+                  const SizedBox(height: 32),
+                  IntlPhoneField(
+                    controller: _phoneController,
+                    decoration: InputDecoration(
+                      labelText: 'Phone Number',
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      prefixIcon: const Icon(Icons.phone),
+                      contentPadding: const EdgeInsets.symmetric(vertical: 12, horizontal: 12),
+                    ),
+                    initialCountryCode: 'ZA',
+                    disableLengthCheck: true,
+                    inputFormatters: [
+                      FilteringTextInputFormatter.digitsOnly,
+                      // Allow either local 10-digit numbers (starting with 0) or
+                      // international without plus (e.g. 277...) which is 11 digits
+                      LengthLimitingTextInputFormatter(11),
+                    ],
+                    onChanged: (phone) {
+                      // Store complete number for Firebase (without modifying controller)
+                      _completePhoneNumber = phone.completeNumber;
+                    },
+                  ),
+                  const SizedBox(height: 24),
+                  ElevatedButton.icon(
+                    onPressed: _loading ? null : _sendCode,
+                    icon: _loading
+                        ? const SizedBox(
+                            width: 20,
+                            height: 20,
+                            child: CircularProgressIndicator(strokeWidth: 2),
+                          )
+                        : const Icon(Icons.send),
+                    label: Text(_loading ? 'Sending...' : 'Get OTP'),
+                    style: ElevatedButton.styleFrom(minimumSize: Size.fromHeight(UIConstants.kButtonMinHeight)),
+                  ),
+                ] else ...[
+                  const SizedBox(height: 24),
+                  Text(
+                    'Enter verification code',
+                    style: theme.textTheme.headlineSmall,
+                    textAlign: TextAlign.center,
+                  ),
+                  const SizedBox(height: 8),
+                  Text(
+                    'We sent a code to $_completePhoneNumber',
+                    style: theme.textTheme.bodyMedium?.copyWith(
+                      color: theme.colorScheme.onSurface.withValues(alpha: 0.6),
+                    ),
+                    textAlign: TextAlign.center,
+                  ),
+                  const SizedBox(height: 32),
+                  Pinput(
+                    controller: _pinController,
+                    length: 6,
+                    defaultPinTheme: defaultPinTheme,
+                    focusedPinTheme: focusedPinTheme,
+                    submittedPinTheme: submittedPinTheme,
+                    errorPinTheme: errorPinTheme,
+                    forceErrorState: _error != null,
+                    pinputAutovalidateMode: PinputAutovalidateMode.onSubmit,
+                    showCursor: true,
+                    onCompleted: _verifyCode,
+                    enabled: !_loading,
+                  ),
+                  const SizedBox(height: 24),
+                  if (_loading)
+                    const Center(child: CircularProgressIndicator())
+                  else
+                    TextButton.icon(
+                      onPressed: _resendCountdown > 0 ? null : _sendCode,
+                      icon: const Icon(Icons.refresh),
+                      label: Text(
+                        _resendCountdown > 0
+                            ? 'Resend code in ${_resendCountdown}s'
+                            : 'Resend code',
                       ),
                     ),
-                  ],
-                ),
-              ),
-            ],
-          ],
+                ],
+                if (_error != null) ...[
+                  const SizedBox(height: 16),
+                  Container(
+                    padding: const EdgeInsets.all(12),
+                    decoration: BoxDecoration(
+                      color: theme.colorScheme.errorContainer,
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                    child: Row(
+                      children: [
+                        Icon(
+                          Icons.error_outline,
+                          color: theme.colorScheme.error,
+                        ),
+                        const SizedBox(width: 8),
+                        Expanded(
+                          child: Text(
+                            _error!,
+                            style: TextStyle(
+                              color: theme.colorScheme.onErrorContainer,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ],
+            ),
+          ),
         ),
       ),
     );

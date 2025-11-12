@@ -1,12 +1,14 @@
 import 'dart:io';
 
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:provider/provider.dart';
 
 import 'package:carlet/services/auth_service.dart';
 import 'package:carlet/services/report_service.dart';
 import 'package:carlet/utils/snackbar.dart';
+import 'package:carlet/utils/ui_constants.dart';
 
 class CreateReportScreen extends StatefulWidget {
   static const routeName = '/report';
@@ -113,7 +115,15 @@ class _CreateReportScreenState extends State<CreateReportScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('Report car')),
+      appBar: AppBar(
+        // Invisible AppBar: transparent background, zero elevation
+        systemOverlayStyle: Theme.of(context).brightness == Brightness.dark
+            ? SystemUiOverlayStyle.light
+            : SystemUiOverlayStyle.dark,
+        backgroundColor: Colors.transparent,
+        elevation: 0,
+        surfaceTintColor: Colors.transparent,
+      ),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(16),
         child: Column(
@@ -151,6 +161,7 @@ class _CreateReportScreenState extends State<CreateReportScreen> {
               decoration: const InputDecoration(
                 labelText: 'License plate',
                 prefixIcon: Icon(Icons.directions_car_outlined),
+                contentPadding: EdgeInsets.symmetric(vertical: 12, horizontal: 12),
               ),
               textCapitalization: TextCapitalization.characters,
             ),
@@ -161,6 +172,7 @@ class _CreateReportScreenState extends State<CreateReportScreen> {
                 labelText: 'Message (optional)',
                 hintText: 'e.g. Your headlights are on',
                 prefixIcon: Icon(Icons.message_outlined),
+                contentPadding: EdgeInsets.symmetric(vertical: 12, horizontal: 12),
               ),
               maxLength: 120,
             ),
@@ -179,6 +191,7 @@ class _CreateReportScreenState extends State<CreateReportScreen> {
               width: double.infinity,
               child: ElevatedButton.icon(
                 onPressed: _loading ? null : _submit,
+                style: ElevatedButton.styleFrom(minimumSize: Size.fromHeight(UIConstants.kButtonMinHeight)),
                 icon: const Icon(Icons.send),
                 label: const Text('Post alert'),
               ),

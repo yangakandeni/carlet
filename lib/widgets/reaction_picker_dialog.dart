@@ -48,9 +48,9 @@ class ReactionPickerDialog extends StatelessWidget {
                     width: 56,
                     height: 56,
                     decoration: BoxDecoration(
-                      color: isSelected
-                          ? theme.colorScheme.primaryContainer
-                          : theme.colorScheme.surfaceVariant,
+            color: isSelected
+              ? theme.colorScheme.primaryContainer
+              : theme.colorScheme.surfaceContainerHighest,
                       borderRadius: BorderRadius.circular(40),
                       border: isSelected
                           ? Border.all(

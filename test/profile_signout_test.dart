@@ -43,7 +43,7 @@ class TestAuthService extends AuthService {
 
 void main() {
   testWidgets('sign out flow from profile screen', (WidgetTester tester) async {
-    final testUser = AppUser(
+    const testUser = AppUser(
       id: 'u1',
       name: 'Test User',
       email: 'test@example.com',
@@ -67,8 +67,8 @@ void main() {
       ),
     );
 
-    // Ensure Profile UI rendered
-    expect(find.text('Profile'), findsOneWidget);
+  // Ensure Profile UI rendered (check for name field instead of AppBar title)
+  expect(find.widgetWithText(TextField, 'Full name'), findsOneWidget);
     expect(find.text('Sign out'), findsWidgets);
 
   // Tap the Sign out button (the one in the profile UI)
