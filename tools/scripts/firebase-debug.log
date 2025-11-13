@@ -330,3 +330,14 @@ INFO: Detected HTTP/2 connection.
 [debug] [2025-11-13T00:09:54.942Z] Nov 13, 2025 2:09:54 AM io.gapi.emulators.netty.HttpVersionRoutingHandler channelRead
 INFO: Detected HTTP/2 connection.
  {"metadata":{"emulator":{"name":"firestore"},"message":"Nov 13, 2025 2:09:54 AM io.gapi.emulators.netty.HttpVersionRoutingHandler channelRead\nINFO: Detected HTTP/2 connection.\n"}}
+[info] i  To verify the phone number +27767887766, use the code 893739. {"metadata":{"emulator":{"name":"auth"},"message":"To verify the phone number +27767887766, use the code 893739."}}
+[debug] [2025-11-13T00:17:58.916Z] Nov 13, 2025 2:17:58 AM io.gapi.emulators.netty.HttpVersionRoutingHandler channelRead
+INFO: Detected HTTP/2 connection.
+ {"metadata":{"emulator":{"name":"firestore"},"message":"Nov 13, 2025 2:17:58 AM io.gapi.emulators.netty.HttpVersionRoutingHandler channelRead\nINFO: Detected HTTP/2 connection.\n"}}
+[debug] [2025-11-13T00:22:07.999Z] Nov 13, 2025 2:22:07 AM io.gapi.emulators.netty.HttpVersionRoutingHandler channelRead
+INFO: Detected HTTP/2 connection.
+ {"metadata":{"emulator":{"name":"firestore"},"message":"Nov 13, 2025 2:22:07 AM io.gapi.emulators.netty.HttpVersionRoutingHandler channelRead\nINFO: Detected HTTP/2 connection.\n"}}
+[info] i  To verify the phone number +27717662280, use the code 164473. {"metadata":{"emulator":{"name":"auth"},"message":"To verify the phone number +27717662280, use the code 164473."}}
+[debug] [2025-11-13T00:23:38.268Z] Nov 13, 2025 2:23:38 AM io.gapi.emulators.netty.HttpVersionRoutingHandler channelRead
+INFO: Detected HTTP/2 connection.
+ {"metadata":{"emulator":{"name":"firestore"},"message":"Nov 13, 2025 2:23:38 AM io.gapi.emulators.netty.HttpVersionRoutingHandler channelRead\nINFO: Detected HTTP/2 connection.\n"}}

@@ -8,9 +8,6 @@ import 'package:provider/provider.dart';
 import 'package:firebase_auth/firebase_auth.dart' as fb;
 // intl_phone_field is no longer used in this screen (LoginScreen supplies the phone).
 import 'package:pinput/pinput.dart';
-// ignore: depend_on_referenced_packages
-import 'package:intl_phone_field/intl_phone_field.dart';
-import 'package:carlet/utils/ui_constants.dart';
 
 import 'package:carlet/services/auth_service.dart';
 import 'package:carlet/widgets/invisible_app_bar.dart';
@@ -19,11 +16,11 @@ import 'package:carlet/screens/auth/onboarding_screen.dart';
 import 'package:carlet/utils/phone_utils.dart';
 
 class PhoneVerificationScreen extends StatefulWidget {
-  // Optional initial phone number. If provided the screen will prefill and
-  // automatically start verification; otherwise the user may enter a number.
-  final String? initialPhone;
+  // Required initial phone number. The login flow provides this from
+  // `LoginScreen` and PhoneVerificationScreen is OTP-only.
+  final String initialPhone;
 
-  const PhoneVerificationScreen({super.key, this.initialPhone});
+  const PhoneVerificationScreen({super.key, required this.initialPhone});
 
   @override
   State<PhoneVerificationScreen> createState() =>
@@ -34,25 +31,17 @@ class _PhoneVerificationScreenState extends State<PhoneVerificationScreen> {
   @override
   void initState() {
     super.initState();
-    // If a test or caller provided an initial phone, prefill the controller
-    // and the internal complete number so tests can avoid typing into the
-    // IntlPhoneField.
-    // If an initial phone was provided, prefill and send the code automatically.
-    if (widget.initialPhone != null && widget.initialPhone!.isNotEmpty) {
-      _phoneController.text = widget.initialPhone!;
-      // Try to pre-normalize the provided phone for display and ease of
-      // testing. Fall back to the raw value if normalization fails.
-      _completePhoneNumber = normalizePhone(widget.initialPhone!) ?? widget.initialPhone!;
-      // Automatically send the verification code so the user lands
-      // directly on the OTP entry UI.
-      WidgetsBinding.instance.addPostFrameCallback((_) {
-        if (!mounted) return;
-        // Only attempt to send if we haven't already sent a code.
-        if (!_codeSent) {
-          _sendCode();
-        }
-      });
-    }
+    // Prefill the controller and normalize the provided phone; then
+    // automatically start verification so the user lands directly on the
+    // OTP entry UI.
+    _phoneController.text = widget.initialPhone;
+    _completePhoneNumber = normalizePhone(widget.initialPhone) ?? widget.initialPhone;
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted) return;
+      if (!_codeSent) {
+        _sendCode();
+      }
+    });
   }
 
   final _phoneController = TextEditingController();
@@ -231,56 +220,24 @@ class _PhoneVerificationScreenState extends State<PhoneVerificationScreen> {
               children: <Widget>[
                 const SizedBox(height: 24),
                 if (!_codeSent) ...[
+                  // OTP-only flow: this screen expects an initial phone and
+                  // will automatically send a code. While awaiting the send
+                  // result show a friendly sending indicator.
                   Text(
-                    'Login or Signup',
+                    'Sending verification code',
                     style: theme.textTheme.headlineSmall,
                     textAlign: TextAlign.center,
                   ),
-                  const SizedBox(height: 8),
+                  const SizedBox(height: 16),
                   Text(
-                    'We\'ll send you an OTP to verify it\'s you',
+                    'We\'re sending a one-time code to $_completePhoneNumber',
                     style: theme.textTheme.bodyMedium?.copyWith(
                       color: theme.colorScheme.onSurface.withValues(alpha: 0.6),
                     ),
                     textAlign: TextAlign.center,
                   ),
-                  const SizedBox(height: 32),
-                  IntlPhoneField(
-                    controller: _phoneController,
-                    decoration: InputDecoration(
-                      labelText: 'Phone Number',
-                      border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                      prefixIcon: const Icon(Icons.phone),
-                      contentPadding: UIConstants.kInputContentPadding,
-                    ),
-                    initialCountryCode: 'ZA',
-                    disableLengthCheck: true,
-                    inputFormatters: [
-                      FilteringTextInputFormatter.digitsOnly,
-                      // Allow either local 10-digit numbers (starting with 0) or
-                      // international without plus (e.g. 277...) which is 11 digits
-                      LengthLimitingTextInputFormatter(11),
-                    ],
-                    onChanged: (phone) {
-                      // Store complete number for Firebase (without modifying controller)
-                      _completePhoneNumber = phone.completeNumber;
-                    },
-                  ),
                   const SizedBox(height: 24),
-                  ElevatedButton.icon(
-                    onPressed: _loading ? null : _sendCode,
-                    icon: _loading
-                        ? const SizedBox(
-                            width: 20,
-                            height: 20,
-                            child: CircularProgressIndicator(strokeWidth: 2),
-                          )
-                        : const Icon(Icons.send),
-                    label: Text(_loading ? 'Sending...' : 'Get OTP', style: theme.textTheme.bodyMedium),
-                    style: ElevatedButton.styleFrom(minimumSize: Size.fromHeight(UIConstants.kButtonMinHeight)),
-                  ),
+                  const Center(child: CircularProgressIndicator()),
                 ] else ...[
                   const SizedBox(height: 24),
                   Text(
