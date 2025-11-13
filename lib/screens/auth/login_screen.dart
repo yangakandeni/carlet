@@ -6,6 +6,7 @@ import 'package:intl_phone_field/intl_phone_field.dart';
 import 'package:carlet/screens/auth/phone_verification_screen.dart';
 import 'package:carlet/widgets/carlet_button.dart';
 import 'package:carlet/utils/phone_utils.dart';
+import 'package:carlet/utils/ui_constants.dart';
 
 /// Phase 1 (Phone Number Input) of the Login flow, styled with Carlet design system.
 /// On submit, navigates to PhoneVerificationScreen for OTP (Phase 2).
@@ -73,7 +74,7 @@ class _LoginScreenState extends State<LoginScreen> {
       labelText: 'Phone Number',
       filled: true,
       fillColor: theme.colorScheme.surface,
-      contentPadding: const EdgeInsets.symmetric(vertical: 12, horizontal: 12),
+      contentPadding: UIConstants.kInputContentPadding,
       border: OutlineInputBorder(
         borderRadius: BorderRadius.circular(24),
         borderSide: BorderSide(color: theme.colorScheme.outline),

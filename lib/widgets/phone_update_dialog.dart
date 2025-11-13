@@ -212,7 +212,7 @@ class _PhoneUpdateDialogState extends State<PhoneUpdateDialog> {
                     borderRadius: BorderRadius.circular(12),
                   ),
                   prefixIcon: const Icon(Icons.phone),
-                  contentPadding: const EdgeInsets.symmetric(vertical: 12, horizontal: 12),
+                  contentPadding: UIConstants.kInputContentPadding,
                 ),
                 initialCountryCode: 'ZA',
                 disableLengthCheck: true,

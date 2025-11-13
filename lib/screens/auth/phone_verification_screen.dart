@@ -253,7 +253,7 @@ class _PhoneVerificationScreenState extends State<PhoneVerificationScreen> {
                         borderRadius: BorderRadius.circular(12),
                       ),
                       prefixIcon: const Icon(Icons.phone),
-                      contentPadding: const EdgeInsets.symmetric(vertical: 12, horizontal: 12),
+                      contentPadding: UIConstants.kInputContentPadding,
                     ),
                     initialCountryCode: 'ZA',
                     disableLengthCheck: true,
@@ -278,7 +278,7 @@ class _PhoneVerificationScreenState extends State<PhoneVerificationScreen> {
                             child: CircularProgressIndicator(strokeWidth: 2),
                           )
                         : const Icon(Icons.send),
-                    label: Text(_loading ? 'Sending...' : 'Get OTP'),
+                    label: Text(_loading ? 'Sending...' : 'Get OTP', style: theme.textTheme.bodyMedium),
                     style: ElevatedButton.styleFrom(minimumSize: Size.fromHeight(UIConstants.kButtonMinHeight)),
                   ),
                 ] else ...[

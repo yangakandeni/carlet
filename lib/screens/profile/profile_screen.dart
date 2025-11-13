@@ -97,7 +97,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 decoration: const InputDecoration(
                   labelText: 'Full name',
                   border: OutlineInputBorder(),
-                  contentPadding: EdgeInsets.symmetric(vertical: 12, horizontal: 12),
+                  contentPadding: UIConstants.kInputContentPadding,
                 ),
                 textInputAction: TextInputAction.next,
               ),
@@ -108,8 +108,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   labelText: 'Email address',
                   hintText: 'Enter your email',
                   border: OutlineInputBorder(),
-                  contentPadding: EdgeInsets.symmetric(vertical: 12, horizontal: 12),
-                ),
+                ).copyWith(contentPadding: UIConstants.kInputContentPadding),
                 keyboardType: TextInputType.emailAddress,
                 textInputAction: TextInputAction.done,
               ),

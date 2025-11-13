@@ -8,6 +8,7 @@ import 'package:carlet/services/comment_service.dart';
 import 'package:carlet/services/auth_service.dart';
 import 'package:carlet/utils/snackbar.dart';
 import 'package:carlet/widgets/reaction_picker_dialog.dart';
+import 'package:carlet/utils/ui_constants.dart';
 
 class CommentsScreen extends StatefulWidget {
   final Report report;
@@ -231,11 +232,7 @@ class _CommentsScreenState extends State<CommentsScreen> {
                               decoration: const InputDecoration(
                                 hintText: 'Add a comment...',
                                 border: OutlineInputBorder(),
-                                contentPadding: EdgeInsets.symmetric(
-                                  horizontal: 12,
-                                  vertical: 8,
-                                ),
-                              ),
+                              ).copyWith(contentPadding: UIConstants.kInputContentPadding),
                               maxLines: null,
                               textInputAction: TextInputAction.send,
                               onSubmitted: (_) => _postComment(),

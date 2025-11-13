@@ -8,6 +8,7 @@ import 'package:carlet/utils/plate_utils.dart';
 import 'package:carlet/screens/home/home_screen.dart';
 import 'package:carlet/widgets/carlet_button.dart';
 import 'package:carlet/widgets/invisible_app_bar.dart';
+import 'package:carlet/utils/ui_constants.dart';
 
 class OnboardingScreen extends StatefulWidget {
   static const routeName = '/onboarding';
@@ -167,7 +168,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                                   border: OutlineInputBorder(
                                     borderRadius: BorderRadius.circular(12),
                                   ),
-                                  contentPadding: const EdgeInsets.symmetric(vertical: 12, horizontal: 12),
+                                  contentPadding: UIConstants.kInputContentPadding,
                                 ),
                                 validator: (v) => (v == null || v.trim().isEmpty)
                                     ? 'Please enter your name'
@@ -183,7 +184,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                                   border: OutlineInputBorder(
                                     borderRadius: BorderRadius.circular(12),
                                   ),
-                                  contentPadding: const EdgeInsets.symmetric(vertical: 12, horizontal: 12),
+                                  contentPadding: UIConstants.kInputContentPadding,
                                 ),
                                 validator: _validateVehicle,
                                 textInputAction: TextInputAction.next,
@@ -196,7 +197,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                                   border: OutlineInputBorder(
                                     borderRadius: BorderRadius.circular(12),
                                   ),
-                                  contentPadding: const EdgeInsets.symmetric(vertical: 12, horizontal: 12),
+                                  contentPadding: UIConstants.kInputContentPadding,
                                 ),
                                 inputFormatters: const [
                                   UpperCaseTextFormatter(),

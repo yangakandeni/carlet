@@ -161,8 +161,7 @@ class _CreateReportScreenState extends State<CreateReportScreen> {
               decoration: const InputDecoration(
                 labelText: 'License plate',
                 prefixIcon: Icon(Icons.directions_car_outlined),
-                contentPadding: EdgeInsets.symmetric(vertical: 12, horizontal: 12),
-              ),
+              ).copyWith(contentPadding: UIConstants.kInputContentPadding),
               textCapitalization: TextCapitalization.characters,
             ),
             const SizedBox(height: 12),
@@ -172,8 +171,7 @@ class _CreateReportScreenState extends State<CreateReportScreen> {
                 labelText: 'Message (optional)',
                 hintText: 'e.g. Your headlights are on',
                 prefixIcon: Icon(Icons.message_outlined),
-                contentPadding: EdgeInsets.symmetric(vertical: 12, horizontal: 12),
-              ),
+              ).copyWith(contentPadding: UIConstants.kInputContentPadding),
               maxLength: 120,
             ),
             SwitchListTile(
