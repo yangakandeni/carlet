@@ -10,4 +10,6 @@ class UIConstants {
 
   // Max content width for centered forms/screens on wide displays
   static const double kFormMaxWidth = 480.0;
+  // Default label font size for primary CTAs
+  static const double kButtonLabelSize = 18.0;
 }

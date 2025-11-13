@@ -128,7 +128,7 @@ class _LoginScreenState extends State<LoginScreen> {
                     showDropdownIcon: true,
                     // Keep flag+code inside field; don't add extra prefix icon.
                     onChanged: (phone) => _completePhoneNumber = phone.completeNumber,
-                    style: theme.textTheme.bodyMedium?.copyWith(fontSize: 16),
+                    style: theme.textTheme.bodyMedium?.copyWith(fontSize: 18),
                   ),
                   const SizedBox(height: 24),
 

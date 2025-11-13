@@ -10,6 +10,7 @@ class CarletButton extends StatefulWidget {
   final bool isPrimary;
   final bool showLoading;
   final Widget? icon;
+  final TextStyle? textStyle;
 
   /// Convenience constructor for primary button.
   const CarletButton.primary({
@@ -18,6 +19,7 @@ class CarletButton extends StatefulWidget {
     required VoidCallback onPressed,
     bool showLoading = false,
     Widget? icon,
+    TextStyle? textStyle,
   }) : this(
           key: key,
           text: text,
@@ -25,6 +27,7 @@ class CarletButton extends StatefulWidget {
           isPrimary: true,
           showLoading: showLoading,
           icon: icon,
+          textStyle: textStyle,
         );
 
   /// Convenience constructor for outlined button.
@@ -34,6 +37,7 @@ class CarletButton extends StatefulWidget {
     required VoidCallback onPressed,
     bool showLoading = false,
     Widget? icon,
+    TextStyle? textStyle,
   }) : this(
           key: key,
           text: text,
@@ -41,6 +45,7 @@ class CarletButton extends StatefulWidget {
           isPrimary: false,
           showLoading: showLoading,
           icon: icon,
+          textStyle: textStyle,
         );
 
   const CarletButton({
@@ -50,6 +55,7 @@ class CarletButton extends StatefulWidget {
     this.isPrimary = true,
     this.showLoading = false,
     this.icon,
+    this.textStyle,
   });
 
   @override
@@ -84,13 +90,21 @@ class _CarletButtonState extends State<CarletButton> with SingleTickerProviderSt
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+
+    final defaultTextStyle = widget.textStyle ?? theme.textTheme.labelLarge?.copyWith(
+      fontSize: UIConstants.kButtonLabelSize,
+      fontWeight: FontWeight.w600,
+      color: widget.isPrimary ? theme.colorScheme.onPrimary : theme.colorScheme.primary,
+    );
+
     final Widget content = widget.showLoading
         ? SizedBox(
             height: 20,
             width: 20,
             child: CircularProgressIndicator(
               strokeWidth: 2,
-              color: Theme.of(context).colorScheme.onPrimary,
+              color: theme.colorScheme.onPrimary,
             ),
           )
         : (widget.icon != null
@@ -108,10 +122,10 @@ class _CarletButtonState extends State<CarletButton> with SingleTickerProviderSt
                     child: widget.icon!,
                   ),
                   const SizedBox(width: 8),
-                  Text(widget.text),
+                  Text(widget.text, style: defaultTextStyle),
                 ],
               )
-            : Text(widget.text));
+            : Text(widget.text, style: widget.textStyle));
 
     final hoveredElevation = WidgetStateProperty.resolveWith<double?>((states) {
       if (states.contains(WidgetState.hovered)) return 3;
@@ -122,8 +136,8 @@ class _CarletButtonState extends State<CarletButton> with SingleTickerProviderSt
     // still allowing theme overrides to control color/shape.
     final buttonStyle = ButtonStyle(
       elevation: hoveredElevation,
-  minimumSize: MaterialStateProperty.all(Size.fromHeight(UIConstants.kButtonMinHeight)),
-      padding: MaterialStateProperty.all(const EdgeInsets.symmetric(vertical: 14, horizontal: 16)),
+  minimumSize: WidgetStateProperty.all(const Size.fromHeight(UIConstants.kButtonMinHeight)),
+      padding: WidgetStateProperty.all(const EdgeInsets.symmetric(vertical: 14, horizontal: 16)),
     );
 
     final button = widget.isPrimary

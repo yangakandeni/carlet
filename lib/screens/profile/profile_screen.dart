@@ -159,7 +159,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
               const SizedBox(height: 24),
               ElevatedButton(
                 onPressed: _loading ? null : _save,
-                style: ElevatedButton.styleFrom(minimumSize: Size.fromHeight(UIConstants.kButtonMinHeight)),
+                style: ElevatedButton.styleFrom(minimumSize: const Size.fromHeight(UIConstants.kButtonMinHeight)),
                 child: _loading ? const CircularProgressIndicator() : const Text('Save'),
               ),
               const SizedBox(height: 12),

@@ -189,7 +189,7 @@ class _CreateReportScreenState extends State<CreateReportScreen> {
               width: double.infinity,
               child: ElevatedButton.icon(
                 onPressed: _loading ? null : _submit,
-                style: ElevatedButton.styleFrom(minimumSize: Size.fromHeight(UIConstants.kButtonMinHeight)),
+                style: ElevatedButton.styleFrom(minimumSize: const Size.fromHeight(UIConstants.kButtonMinHeight)),
                 icon: const Icon(Icons.send),
                 label: const Text('Post alert'),
               ),

@@ -227,7 +227,7 @@ class _PhoneUpdateDialogState extends State<PhoneUpdateDialog> {
               const SizedBox(height: 16),
               ElevatedButton(
                 onPressed: _loading ? null : _sendCode,
-                style: ElevatedButton.styleFrom(minimumSize: Size.fromHeight(UIConstants.kButtonMinHeight)),
+                style: ElevatedButton.styleFrom(minimumSize: const Size.fromHeight(UIConstants.kButtonMinHeight)),
                 child: _loading
                     ? const SizedBox(
                         width: 20,
