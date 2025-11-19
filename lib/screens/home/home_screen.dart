@@ -61,7 +61,7 @@ class _HomeScreenState extends State<HomeScreen> {
         //     ),
         //   ),
         // ),
-        leadingWidth: 150,
+        leadingWidth: 80,
         centerTitle: true,
         // Profile avatar on the right (32dp diameter = 16dp radius)
         actions: [

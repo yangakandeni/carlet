@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 
 import 'package:carlet/models/report_model.dart';
 import 'package:carlet/widgets/carlet_badge.dart';
-import 'package:carlet/widgets/carlet_card.dart';
 
 class ReportCard extends StatelessWidget {
   final Report report;
@@ -21,6 +20,29 @@ class ReportCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    
+    // Calculate minutes elapsed since report
+    String getTimeAgo() {
+      final now = DateTime.now().toUtc();
+      final reportTime = report.timestamp.toUtc();
+      final diff = now.difference(reportTime);
+      final minutes = diff.inMinutes;
+      
+      if (minutes < 1) {
+        return '<1 min ago';
+      } else if (minutes == 1) {
+        return '1 min ago';
+      } else if (minutes < 60) {
+        return '$minutes mins ago';
+      } else if (minutes < 1440) {
+        final hours = (minutes / 60).floor();
+        return hours == 1 ? '1 hour ago' : '$hours hours ago';
+      } else {
+        final days = (minutes / 1440).floor();
+        return days == 1 ? '1 day ago' : '$days days ago';
+      }
+    }
+    
     String? deletionHint() {
       if (report.status != 'resolved' || report.expireAt == null) return null;
       final now = DateTime.now().toUtc();
@@ -41,30 +63,39 @@ class ReportCard extends StatelessWidget {
         ? theme.colorScheme.error 
         : theme.colorScheme.onSecondaryContainer;
 
-    return CarletCard(
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          if (report.photoUrl != null) ...[
-            ClipRRect(
-              borderRadius: BorderRadius.circular(8),
-              child: AspectRatio(
+    return GestureDetector(
+      onTapDown: (_) {},
+      child: Card(
+        clipBehavior: Clip.antiAlias,
+        shape: const RoundedRectangleBorder(borderRadius: BorderRadius.all(Radius.circular(12))),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            if (report.photoUrl != null) ...[
+              AspectRatio(
                 aspectRatio: 16 / 9,
                 child: Image.network(report.photoUrl!, fit: BoxFit.cover),
               ),
-            ),
-            const SizedBox(height: 12),
-          ],
+            ],
+            Padding(
+              padding: const EdgeInsets.all(16),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
           Row(
             children: [
               if (report.licensePlate != null &&
                   report.licensePlate!.isNotEmpty)
-                CarletBadge(
-                  text: report.licensePlate!,
-                  backgroundColor: theme.colorScheme.primaryContainer,
-                  textColor: theme.colorScheme.onPrimaryContainer,
+                Expanded(
+                  child: Text(
+                    report.licensePlate!,
+                    style: theme.textTheme.headlineSmall?.copyWith(
+                      fontWeight: FontWeight.bold,
+                      letterSpacing: 1.2,
+                    ),
+                  ),
                 ),
-              const Spacer(),
+              const SizedBox(width: 8),
               CarletBadge(
                 text: report.status,
                 backgroundColor: badgeColor,
@@ -76,8 +107,9 @@ class ReportCard extends StatelessWidget {
             const SizedBox(height: 12),
             Text(
               report.message!,
-              style: theme.textTheme.bodyLarge?.copyWith(
-                height: 1.4,
+              style: theme.textTheme.titleMedium?.copyWith(
+                height: 1.5,
+                fontWeight: FontWeight.w500,
               ),
             ),
           ],
@@ -95,7 +127,7 @@ class ReportCard extends StatelessWidget {
                     mainAxisSize: MainAxisSize.min,
                     children: [
                       Icon(
-                        Icons.favorite,
+                        Icons.favorite_border_outlined,
                         size: 20,
                         color: report.status == 'resolved'
                             ? theme.colorScheme.onSurface.withValues(alpha: 0.4)
@@ -125,7 +157,7 @@ class ReportCard extends StatelessWidget {
                     mainAxisSize: MainAxisSize.min,
                     children: [
                       Icon(
-                        Icons.comment_outlined,
+                        Icons.mode_comment_outlined,
                         size: 20,
                         color: report.status == 'resolved'
                             ? theme.colorScheme.onSurface.withValues(alpha: 0.4)
@@ -148,7 +180,7 @@ class ReportCard extends StatelessWidget {
           ),
           const SizedBox(height: 12),
           Text(
-            'Reported: ${report.timestamp.toLocal().toString().split('.')[0]}',
+            getTimeAgo(),
             style: theme.textTheme.bodySmall?.copyWith(
               color: theme.colorScheme.onSurface.withValues(alpha: 0.6),
             ),
@@ -179,7 +211,11 @@ class ReportCard extends StatelessWidget {
                 ),
               ),
             ),
-        ],
+                ],
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }

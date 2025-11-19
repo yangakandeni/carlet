@@ -88,7 +88,7 @@ void main() {
 
     // Enter fields and submit
     await tester.enterText(find.widgetWithText(TextField, 'License plate'), 'ABC123');
-    await tester.enterText(find.widgetWithText(TextField, 'Message (optional)'), 'Test');
+    await tester.enterText(find.widgetWithText(TextField, 'Message'), 'Test');
 
     await tester.tap(find.text('Post alert'));
 

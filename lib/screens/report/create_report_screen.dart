@@ -1,7 +1,6 @@
 import 'dart:io';
 
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:provider/provider.dart';
 
@@ -9,6 +8,8 @@ import 'package:carlet/services/auth_service.dart';
 import 'package:carlet/services/report_service.dart';
 import 'package:carlet/utils/snackbar.dart';
 import 'package:carlet/utils/ui_constants.dart';
+import 'package:carlet/widgets/carlet_button.dart';
+import 'package:carlet/widgets/invisible_app_bar.dart';
 
 class CreateReportScreen extends StatefulWidget {
   static const routeName = '/report';
@@ -32,7 +33,7 @@ class CreateReportScreen extends StatefulWidget {
 class _CreateReportScreenState extends State<CreateReportScreen> {
   final _plate = TextEditingController();
   final _message = TextEditingController();
-  bool _anonymous = false;
+  final bool _anonymous = false;
   XFile? _photo;
   bool _loading = false;
   String? _error;
@@ -114,21 +115,18 @@ class _CreateReportScreenState extends State<CreateReportScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    
     return Scaffold(
-      appBar: AppBar(
-        // Invisible AppBar: transparent background, zero elevation
-        systemOverlayStyle: Theme.of(context).brightness == Brightness.dark
-            ? SystemUiOverlayStyle.light
-            : SystemUiOverlayStyle.dark,
-        backgroundColor: Colors.transparent,
-        elevation: 0,
-        surfaceTintColor: Colors.transparent,
-      ),
+      appBar: const InvisibleAppBar(),
       body: SingleChildScrollView(
-        padding: const EdgeInsets.all(16),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
+        padding: const EdgeInsets.all(24),
+        child: Center(
+          child: ConstrainedBox(
+            constraints: const BoxConstraints(maxWidth: 400),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
             Row(
               children: [
                 Expanded(
@@ -155,46 +153,68 @@ class _CreateReportScreenState extends State<CreateReportScreen> {
                 child: Image.file(File(_photo!.path),
                     height: 200, fit: BoxFit.cover),
               ),
-            const SizedBox(height: 12),
+            const SizedBox(height: 16),
             TextField(
               controller: _plate,
-              decoration: const InputDecoration(
+              decoration: InputDecoration(
                 labelText: 'License plate',
-                prefixIcon: Icon(Icons.directions_car_outlined),
-              ).copyWith(contentPadding: UIConstants.kInputContentPadding),
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                contentPadding: UIConstants.kInputContentPadding,
+              ),
               textCapitalization: TextCapitalization.characters,
             ),
-            const SizedBox(height: 12),
+            const SizedBox(height: 16),
             TextField(
               controller: _message,
-              decoration: const InputDecoration(
-                labelText: 'Message (optional)',
+              decoration: InputDecoration(
+                labelText: 'Message',
                 hintText: 'e.g. Your headlights are on',
-                prefixIcon: Icon(Icons.message_outlined),
-              ).copyWith(contentPadding: UIConstants.kInputContentPadding),
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                contentPadding: UIConstants.kInputContentPadding,
+              ),
               maxLength: 120,
+              maxLines: 2,
             ),
-            SwitchListTile(
-              value: _anonymous,
-              onChanged: (v) => setState(() => _anonymous = v),
-              title: const Text('Post anonymously'),
-            ),
-            if (_error != null)
-              Padding(
-                padding: const EdgeInsets.only(top: 8),
-                child: Text(_error!, style: const TextStyle(color: Colors.red)),
+            const SizedBox(height: 20),
+            if (_error != null) ...[
+              Container(
+                padding: const EdgeInsets.all(12),
+                decoration: BoxDecoration(
+                  color: theme.colorScheme.errorContainer,
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Icon(Icons.error_outline, color: theme.colorScheme.error),
+                    const SizedBox(width: 8),
+                    Expanded(
+                      child: Text(
+                        _error!,
+                        style: theme.textTheme.bodyMedium?.copyWith(
+                          color: theme.colorScheme.onErrorContainer,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
               ),
-            const SizedBox(height: 12),
-            SizedBox(
-              width: double.infinity,
-              child: ElevatedButton.icon(
-                onPressed: _loading ? null : _submit,
-                style: ElevatedButton.styleFrom(minimumSize: const Size.fromHeight(UIConstants.kButtonMinHeight)),
-                icon: const Icon(Icons.send),
-                label: const Text('Post alert'),
-              ),
+              const SizedBox(height: 16),
+            ],
+            CarletButton.primary(
+              text: 'Post alert',
+              onPressed: _submit,
+              showLoading: _loading,
+              icon: const Icon(Icons.send),
             ),
-          ],
+            const SizedBox(height: 16),
+              ],
+            ),
+          ),
         ),
       ),
     );

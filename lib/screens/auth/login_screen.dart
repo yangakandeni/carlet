@@ -100,14 +100,14 @@ class _LoginScreenState extends State<LoginScreen> {
     return Scaffold(
       // No app bar; system back still works.
       body: SafeArea(
-        child: Center(
-          child: SingleChildScrollView(
-            padding: const EdgeInsets.fromLTRB(24, 32, 24, 24),
-            child: ConstrainedBox(
-              constraints: const BoxConstraints(maxWidth: 480),
-              child: Column(
+        child: SingleChildScrollView(
+          padding: const EdgeInsets.fromLTRB(24, 32, 24, 24),
+          child: ConstrainedBox(
+            constraints: const BoxConstraints(maxWidth: 480),
+            child: Column(
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
+                  const SizedBox(height: 56),
                   Text(
                     'Login or Signup',
                     style: theme.textTheme.headlineSmall,
@@ -128,7 +128,7 @@ class _LoginScreenState extends State<LoginScreen> {
                     showDropdownIcon: true,
                     // Keep flag+code inside field; don't add extra prefix icon.
                     onChanged: (phone) => _completePhoneNumber = phone.completeNumber,
-                    style: theme.textTheme.bodyMedium?.copyWith(fontSize: 18),
+                    style: theme.textTheme.bodyMedium?.copyWith(fontSize: 16),
                   ),
                   const SizedBox(height: 24),
 
@@ -190,7 +190,6 @@ class _LoginScreenState extends State<LoginScreen> {
             ),
           ),
         ),
-      ),
     );
   }
 }

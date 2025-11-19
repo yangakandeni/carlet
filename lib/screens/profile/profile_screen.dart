@@ -7,6 +7,7 @@ import 'package:carlet/models/user_model.dart';
 import 'package:carlet/utils/snackbar.dart';
 import 'package:carlet/screens/auth/login_screen.dart';
 import 'package:carlet/widgets/phone_update_dialog.dart';
+import 'package:carlet/widgets/carlet_button.dart';
 import 'package:carlet/utils/ui_constants.dart';
 
 class ProfileScreen extends StatefulWidget {
@@ -85,18 +86,27 @@ class _ProfileScreenState extends State<ProfileScreen> {
         elevation: 0,
         surfaceTintColor: Colors.transparent,
       ),
-      body: SingleChildScrollView(
-        padding: const EdgeInsets.all(16),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
+      body: CustomScrollView(
+        slivers: [
+          SliverPadding(
+            padding: const EdgeInsets.all(24),
+            sliver: SliverFillRemaining(
+              hasScrollBody: false,
+              child: Center(
+                child: ConstrainedBox(
+                  constraints: const BoxConstraints(maxWidth: 400),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    children: [
             if (user == null) const Text('Not signed in'),
             if (user != null) ...[
               TextField(
                 controller: _nameCtrl,
-                decoration: const InputDecoration(
+                decoration: InputDecoration(
                   labelText: 'Full name',
-                  border: OutlineInputBorder(),
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(12),
+                  ),
                   contentPadding: UIConstants.kInputContentPadding,
                 ),
                 textInputAction: TextInputAction.next,
@@ -104,11 +114,14 @@ class _ProfileScreenState extends State<ProfileScreen> {
               const SizedBox(height: 16),
               TextField(
                 controller: _emailCtrl,
-                decoration: const InputDecoration(
+                decoration: InputDecoration(
                   labelText: 'Email address',
                   hintText: 'Enter your email',
-                  border: OutlineInputBorder(),
-                ).copyWith(contentPadding: UIConstants.kInputContentPadding),
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  contentPadding: UIConstants.kInputContentPadding,
+                ),
                 keyboardType: TextInputType.emailAddress,
                 textInputAction: TextInputAction.done,
               ),
@@ -118,7 +131,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 padding: const EdgeInsets.all(16),
                 decoration: BoxDecoration(
                   border: Border.all(color: Theme.of(context).dividerColor),
-                  borderRadius: BorderRadius.circular(4),
+                  borderRadius: BorderRadius.circular(12),
                 ),
                 child: Row(
                   children: [
@@ -151,16 +164,48 @@ class _ProfileScreenState extends State<ProfileScreen> {
               const SizedBox(height: 16),
               const Divider(),
               const SizedBox(height: 8),
-              const Text('Vehicle (read-only)', style: TextStyle(fontWeight: FontWeight.bold)),
+              const Text('My Vehicle', style: TextStyle(fontWeight: FontWeight.bold)),
               const SizedBox(height: 8),
-              Text('Make: ${user.carMake ?? "-"}'),
-              Text('Model: ${user.carModel ?? "-"}'),
-              Text('Plate: ${user.carPlate ?? "-"}'),
-              const SizedBox(height: 24),
-              ElevatedButton(
-                onPressed: _loading ? null : _save,
-                style: ElevatedButton.styleFrom(minimumSize: const Size.fromHeight(UIConstants.kButtonMinHeight)),
-                child: _loading ? const CircularProgressIndicator() : const Text('Save'),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  const Text('Make'),
+                  Text(
+                    user.carMake ?? '-',
+                    style: const TextStyle(fontWeight: FontWeight.w600),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 8),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  const Text('Model'),
+                  Text(
+                    user.carModel ?? '-',
+                    style: const TextStyle(fontWeight: FontWeight.w600),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 8),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  const Text('Plate'),
+                  Text(
+                    user.carPlate ?? '-',
+                    style: const TextStyle(fontWeight: FontWeight.w600),
+                  ),
+                ],
+              ),
+              // const SizedBox(height: 24),
+              const Spacer(),
+              const Divider(),
+              const SizedBox(height: 16),
+              CarletButton.primary(
+                text: 'Save',
+                onPressed: _loading ? (){} : _save,
+                showLoading: _loading,
               ),
               const SizedBox(height: 12),
               OutlinedButton.icon(
@@ -195,8 +240,13 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 label: const Text('Sign out'),
               ),
             ],
-          ],
+                  ],
+                ),
+              ),
+            ),
+          ),
         ),
+        ],
       ),
     );
   }

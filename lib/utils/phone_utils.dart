@@ -29,7 +29,7 @@ bool isValidSouthAfricanPhone(String phone) {
 
 /// Gets a user-friendly error message for invalid SA phone numbers.
 String getPhoneValidationError() {
-  return 'Please enter a valid phone number';
+  return 'Please enter a valid South African phone number';
 }
 
 String? normalizePhone(String raw) {

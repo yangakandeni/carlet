@@ -81,7 +81,7 @@ void main() {
         ),
       );
 
-      // Enter user's own license plate with different case and spaces
+      // Enter user's own license plate (with different casing & space)
       await tester.enterText(
           find.widgetWithText(TextField, 'License plate'), 'abc 123');
       await tester.pumpAndSettle();
@@ -124,7 +124,7 @@ void main() {
         ),
       );
 
-      // Enter a different license plate
+      // Enter different license plate
       await tester.enterText(
           find.widgetWithText(TextField, 'License plate'), 'XYZ789');
       await tester.pumpAndSettle();

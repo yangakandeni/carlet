@@ -33,7 +33,7 @@ dependencies:
   # Phone Authentication UI
   intl_phone_field: ^3.2.0
   pinput: ^5.0.2
-  another_flushbar: ^1.12.32
+  toastification: ^2.3.0
 
 dev_dependencies:
   flutter_test:

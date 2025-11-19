@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:toastification/toastification.dart';
 
 import 'package:carlet/screens/splash_screen.dart';
 import 'package:carlet/screens/auth/login_screen.dart';
@@ -16,21 +17,23 @@ class CarletApp extends StatelessWidget {
   Widget build(BuildContext context) {
     final messengerKey = GlobalKey<ScaffoldMessengerState>();
 
-    return MaterialApp(
-        title: 'Carlet',
-        debugShowCheckedModeBanner: false,
-        themeMode: ThemeMode.system,
-        scaffoldMessengerKey: messengerKey,
-        theme: AppTheme.lightTheme,
-        darkTheme: AppTheme.darkTheme,
-        initialRoute: SplashScreen.routeName,
-        routes: {
-          SplashScreen.routeName: (_) => const SplashScreen(),
-          LoginScreen.routeName: (_) => const LoginScreen(),
-          OnboardingScreen.routeName: (_) => const OnboardingScreen(),
-          HomeScreen.routeName: (_) => const HomeScreen(),
-          CreateReportScreen.routeName: (_) => const CreateReportScreen(),
-          ProfileScreen.routeName: (_) => const ProfileScreen(),
-        });
+    return ToastificationWrapper(
+      child: MaterialApp(
+          title: 'Carlet',
+          debugShowCheckedModeBanner: false,
+          themeMode: ThemeMode.system,
+          scaffoldMessengerKey: messengerKey,
+          theme: AppTheme.lightTheme,
+          darkTheme: AppTheme.darkTheme,
+          initialRoute: SplashScreen.routeName,
+          routes: {
+            SplashScreen.routeName: (_) => const SplashScreen(),
+            LoginScreen.routeName: (_) => const LoginScreen(),
+            OnboardingScreen.routeName: (_) => const OnboardingScreen(),
+            HomeScreen.routeName: (_) => const HomeScreen(),
+            CreateReportScreen.routeName: (_) => const CreateReportScreen(),
+            ProfileScreen.routeName: (_) => const ProfileScreen(),
+          }),
+    );
   }
 }

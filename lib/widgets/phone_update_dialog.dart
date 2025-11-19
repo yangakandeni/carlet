@@ -67,6 +67,12 @@ class _PhoneUpdateDialogState extends State<PhoneUpdateDialog> {
       return;
     }
 
+    // Validate it's a valid South African phone number
+    if (!isValidSouthAfricanPhone(normalized)) {
+      setState(() => _error = getPhoneValidationError());
+      return;
+    }
+
     // Check if it's the same as current phone
     if (normalized == widget.currentPhone) {
       setState(() => _error = 'This is already your current phone number');
@@ -179,7 +185,7 @@ class _PhoneUpdateDialogState extends State<PhoneUpdateDialog> {
                 Expanded(
                   child: Text(
                     _codeSent ? 'Verify new phone' : 'Update phone number',
-                    style: theme.textTheme.titleLarge,
+                    style: theme.textTheme.titleMedium,
                   ),
                 ),
                 IconButton(
@@ -193,14 +199,14 @@ class _PhoneUpdateDialogState extends State<PhoneUpdateDialog> {
               if (widget.currentPhone != null) ...[
                 Text(
                   'Current: ${widget.currentPhone}',
-                  style: theme.textTheme.bodyMedium?.copyWith(
-                    color: theme.colorScheme.onSurface.withValues(alpha: 0.6),
+                  style: theme.textTheme.bodyLarge?.copyWith(
+                    color: theme.colorScheme.onSurface.withAlpha(153),
                   ),
                 ),
                 const SizedBox(height: 16),
               ],
               Text(
-                'Enter your new phone number. We\'ll send you a verification code.',
+                'Enter your new phone number.',
                 style: theme.textTheme.bodyMedium,
               ),
               const SizedBox(height: 16),
@@ -214,6 +220,7 @@ class _PhoneUpdateDialogState extends State<PhoneUpdateDialog> {
                   prefixIcon: const Icon(Icons.phone),
                   contentPadding: UIConstants.kInputContentPadding,
                 ),
+                style: theme.textTheme.bodyMedium?.copyWith(fontSize: 20),
                 initialCountryCode: 'ZA',
                 disableLengthCheck: true,
                 inputFormatters: [
