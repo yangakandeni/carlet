@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:provider/provider.dart';
 
 import 'package:carlet/services/auth_service.dart';
@@ -155,7 +156,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                     ),
                     TextButton.icon(
                       onPressed: _updatePhone,
-                      icon: const Icon(Icons.edit, size: 18),
+                      icon: const FaIcon(FontAwesomeIcons.penToSquare, size: 16),
                       label: const Text('Update'),
                     ),
                   ],
@@ -235,7 +236,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                     AppSnackbar.showError(navigator.context, 'Failed to sign out. Please try again.');
                   }
                 },
-                icon: const Icon(Icons.logout),
+                icon: const FaIcon(FontAwesomeIcons.rightFromBracket, size: 18),
                 label: const Text('Sign out'),
               ),
               const SizedBox(height: 24),

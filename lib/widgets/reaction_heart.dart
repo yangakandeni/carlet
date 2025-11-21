@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:carlet/widgets/animation_utils.dart';
 
 /// Reaction heart that pulses and triggers haptic feedback on toggle.
@@ -43,9 +44,9 @@ class _ReactionHeartState extends State<ReactionHeart> {
           onTap: _toggle,
           child: Pulse(
             play: active,
-            child: Icon(
-              active ? Icons.favorite : Icons.favorite_outline,
-              size: 20,
+            child: FaIcon(
+              active ? FontAwesomeIcons.solidHeart : FontAwesomeIcons.heart,
+              size: 18,
               color: active ? Theme.of(context).colorScheme.primary : Theme.of(context).iconTheme.color,
             ),
           ),

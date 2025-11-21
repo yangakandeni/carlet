@@ -3,6 +3,7 @@ import 'dart:async';
 import 'dart:io';
 
 import 'package:flutter/material.dart';
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 // import 'package:flutter/services.dart'; // not needed here
 import 'package:provider/provider.dart';
 import 'package:firebase_auth/firebase_auth.dart' as fb;
@@ -206,7 +207,7 @@ class _PhoneVerificationScreenState extends State<PhoneVerificationScreen> {
     return Scaffold(
       appBar: InvisibleAppBar(
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back),
+          icon: const FaIcon(FontAwesomeIcons.arrowLeft, size: 20),
           onPressed: () => Navigator.of(context).maybePop(),
         ),
       ),
@@ -273,7 +274,7 @@ class _PhoneVerificationScreenState extends State<PhoneVerificationScreen> {
                   else
                     TextButton.icon(
                       onPressed: _resendCountdown > 0 ? null : _sendCode,
-                      icon: const Icon(Icons.refresh),
+                      icon: const FaIcon(FontAwesomeIcons.arrowsRotate, size: 18),
                       label: Text(
                         _resendCountdown > 0
                             ? 'Resend code in ${_resendCountdown}s'
@@ -291,9 +292,10 @@ class _PhoneVerificationScreenState extends State<PhoneVerificationScreen> {
                     ),
                     child: Row(
                       children: [
-                        Icon(
-                          Icons.error_outline,
+                        FaIcon(
+                          FontAwesomeIcons.circleExclamation,
                           color: theme.colorScheme.error,
+                          size: 20,
                         ),
                         const SizedBox(width: 8),
                         Expanded(

@@ -36,6 +36,7 @@ class _HomeScreenState extends State<HomeScreen> {
 
     return Scaffold(
       appBar: InvisibleAppBar(
+        automaticallyImplyLeading: false,
         // Create Report button on the left as a rounded button without icon
         // leading: Padding(
         //   padding: const EdgeInsets.only(left: 8.0, top: 4, bottom: 4),

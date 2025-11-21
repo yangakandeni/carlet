@@ -11,6 +11,7 @@ class InvisibleAppBar extends StatelessWidget implements PreferredSizeWidget {
   final bool centerTitle;
   final double? leadingWidth;
   final PreferredSizeWidget? bottom;
+  final bool automaticallyImplyLeading;
 
   const InvisibleAppBar({
     super.key,
@@ -20,6 +21,7 @@ class InvisibleAppBar extends StatelessWidget implements PreferredSizeWidget {
     this.centerTitle = true,
     this.leadingWidth,
     this.bottom,
+    this.automaticallyImplyLeading = true,
   });
 
   @override
@@ -34,6 +36,7 @@ class InvisibleAppBar extends StatelessWidget implements PreferredSizeWidget {
       title: title,
       actions: actions,
       leading: leading,
+      automaticallyImplyLeading: automaticallyImplyLeading,
       centerTitle: centerTitle,
       leadingWidth: leadingWidth,
       bottom: bottom,

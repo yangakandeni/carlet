@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:provider/provider.dart';
 
 import 'package:carlet/services/auth_service.dart';
@@ -217,7 +218,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                                   child: Row(
                                     crossAxisAlignment: CrossAxisAlignment.start,
                                     children: [
-                                      Icon(Icons.error_outline, color: theme.colorScheme.error),
+                                      FaIcon(FontAwesomeIcons.circleExclamation, color: theme.colorScheme.error, size: 20),
                                       const SizedBox(width: 8),
                                       Expanded(
                                         child: Text(

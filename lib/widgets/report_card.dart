@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 
 import 'package:carlet/models/report_model.dart';
 import 'package:carlet/widgets/carlet_badge.dart';
@@ -65,16 +66,22 @@ class ReportCard extends StatelessWidget {
 
     return GestureDetector(
       onTapDown: (_) {},
-      child: Card(
-        clipBehavior: Clip.antiAlias,
-        shape: const RoundedRectangleBorder(borderRadius: BorderRadius.all(Radius.circular(12))),
+      child: Container(
+        color: theme.colorScheme.surface,
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             if (report.photoUrl != null) ...[
-              AspectRatio(
-                aspectRatio: 16 / 9,
-                child: Image.network(report.photoUrl!, fit: BoxFit.cover),
+              SizedBox(
+                width: double.infinity,
+                child: AspectRatio(
+                  aspectRatio: 16 / 9,
+                  child: Image.network(
+                    report.photoUrl!,
+                    fit: BoxFit.cover,
+                    width: double.infinity,
+                  ),
+                ),
               ),
             ],
             Padding(
@@ -114,7 +121,7 @@ class ReportCard extends StatelessWidget {
             ),
           ],
           const SizedBox(height: 12),
-          // Social engagement row (likes and comments)
+          // Social engagement row with timestamp
           Row(
             children: [
               InkWell(
@@ -126,12 +133,12 @@ class ReportCard extends StatelessWidget {
                   child: Row(
                     mainAxisSize: MainAxisSize.min,
                     children: [
-                      Icon(
-                        Icons.favorite_border_outlined,
-                        size: 20,
+                      FaIcon(
+                        FontAwesomeIcons.heart,
+                        size: 18,
                         color: report.status == 'resolved'
                             ? theme.colorScheme.onSurface.withValues(alpha: 0.4)
-                            : theme.colorScheme.primary,
+                            : theme.colorScheme.onSurface.withValues(alpha: 0.8),
                       ),
                       const SizedBox(width: 4),
                       Text(
@@ -156,9 +163,9 @@ class ReportCard extends StatelessWidget {
                   child: Row(
                     mainAxisSize: MainAxisSize.min,
                     children: [
-                      Icon(
-                        Icons.mode_comment_outlined,
-                        size: 20,
+                      FaIcon(
+                        FontAwesomeIcons.comment,
+                        size: 18,
                         color: report.status == 'resolved'
                             ? theme.colorScheme.onSurface.withValues(alpha: 0.4)
                             : theme.colorScheme.onSurface.withValues(alpha: 0.8),
@@ -176,14 +183,14 @@ class ReportCard extends StatelessWidget {
                   ),
                 ),
               ),
+              const Spacer(),
+              Text(
+                getTimeAgo(),
+                style: theme.textTheme.bodySmall?.copyWith(
+                  color: theme.colorScheme.onSurface.withValues(alpha: 0.6),
+                ),
+              ),
             ],
-          ),
-          const SizedBox(height: 12),
-          Text(
-            getTimeAgo(),
-            style: theme.textTheme.bodySmall?.copyWith(
-              color: theme.colorScheme.onSurface.withValues(alpha: 0.6),
-            ),
           ),
           if (onResolve != null && report.status == 'open') ...[
             const SizedBox(height: 12),
@@ -191,7 +198,7 @@ class ReportCard extends StatelessWidget {
               alignment: Alignment.centerRight,
               child: FilledButton.icon(
                 onPressed: onResolve,
-                icon: const Icon(Icons.check_circle_outline, size: 18),
+                icon: const FaIcon(FontAwesomeIcons.circleCheck, size: 16),
                 label: const Text('Mark resolved'),
                 style: FilledButton.styleFrom(
                   padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
@@ -213,6 +220,11 @@ class ReportCard extends StatelessWidget {
             ),
                 ],
               ),
+            ),
+            Divider(
+              height: 1,
+              thickness: 1,
+              color: theme.colorScheme.outlineVariant.withValues(alpha: 0.2),
             ),
           ],
         ),

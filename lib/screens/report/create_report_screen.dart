@@ -1,6 +1,7 @@
 import 'dart:io';
 
 import 'package:flutter/material.dart';
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:provider/provider.dart';
 
@@ -132,7 +133,7 @@ class _CreateReportScreenState extends State<CreateReportScreen> {
                 Expanded(
                   child: OutlinedButton.icon(
                     onPressed: () => _pick(ImageSource.camera),
-                    icon: const Icon(Icons.photo_camera_outlined),
+                    icon: const FaIcon(FontAwesomeIcons.camera, size: 18),
                     label: const Text('Take photo'),
                   ),
                 ),
@@ -140,7 +141,7 @@ class _CreateReportScreenState extends State<CreateReportScreen> {
                 Expanded(
                   child: OutlinedButton.icon(
                     onPressed: () => _pick(ImageSource.gallery),
-                    icon: const Icon(Icons.photo_library_outlined),
+                    icon: const FaIcon(FontAwesomeIcons.images, size: 18),
                     label: const Text('Upload photo'),
                   ),
                 ),
@@ -190,7 +191,7 @@ class _CreateReportScreenState extends State<CreateReportScreen> {
                 child: Row(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Icon(Icons.error_outline, color: theme.colorScheme.error),
+                    FaIcon(FontAwesomeIcons.circleExclamation, color: theme.colorScheme.error, size: 20),
                     const SizedBox(width: 8),
                     Expanded(
                       child: Text(
@@ -209,7 +210,7 @@ class _CreateReportScreenState extends State<CreateReportScreen> {
               text: 'Post alert',
               onPressed: _submit,
               showLoading: _loading,
-              icon: const Icon(Icons.send),
+              icon: const FaIcon(FontAwesomeIcons.paperPlane, size: 18),
             ),
             const SizedBox(height: 16),
               ],

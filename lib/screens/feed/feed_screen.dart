@@ -1,6 +1,6 @@
-import 'package:carlet/core/theme/app_colors.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 
 import 'package:carlet/models/report_model.dart';
 import 'package:carlet/services/auth_service.dart';
@@ -38,8 +38,8 @@ class _FeedScreenState extends State<FeedScreen> {
                 child: Column(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    Icon(
-                      Icons.error_outline,
+                    FaIcon(
+                      FontAwesomeIcons.circleExclamation,
                       size: 64,
                       color: theme.colorScheme.error,
                     ),
@@ -60,7 +60,7 @@ class _FeedScreenState extends State<FeedScreen> {
                     const SizedBox(height: 24),
                     CarletButton.outlined(
                       text: 'Retry',
-                      icon: const Icon(Icons.refresh),
+                      icon: const FaIcon(FontAwesomeIcons.arrowsRotate),
                       onPressed: () {
                         setState(() {}); // Trigger rebuild to retry stream
                       },
@@ -136,8 +136,8 @@ class _FeedScreenState extends State<FeedScreen> {
               ),
             );
           }
-          return ListView.separated(
-            padding: const EdgeInsets.all(12),
+          return ListView.builder(
+            padding: EdgeInsets.zero,
             itemCount: reports.length,
             itemBuilder: (context, index) {
               final r = reports[index];
@@ -170,11 +170,10 @@ class _FeedScreenState extends State<FeedScreen> {
                 },
               );
             },
-            separatorBuilder: (_, __) => const SizedBox(height: 12),
           );
         },
       ),
-      floatingActionButton: FloatingActionButton.extended(
+      floatingActionButton: FilledButton.icon(
         onPressed: () async {
           final navigator = Navigator.of(context);
           final result = await navigator.pushNamed(
@@ -185,9 +184,11 @@ class _FeedScreenState extends State<FeedScreen> {
             AppSnackbar.showSuccess(context, 'Report posted.');
           }
         },
-        icon: const Icon(Icons.add, color: AppColors.lightSurface,),
-        label: const Text('Report', style: TextStyle(color: AppColors.lightSurface),),
-        backgroundColor: AppColors.primary,
+        icon: const FaIcon(FontAwesomeIcons.plus, size: 16),
+        label: const Text('Report'),
+        style: FilledButton.styleFrom(
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+        ),
       ),
     );
   }

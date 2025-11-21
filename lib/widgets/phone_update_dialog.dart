@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:firebase_auth/firebase_auth.dart' as fb;
 // ignore: depend_on_referenced_packages
 import 'package:intl_phone_field/intl_phone_field.dart';
@@ -189,7 +190,7 @@ class _PhoneUpdateDialogState extends State<PhoneUpdateDialog> {
                   ),
                 ),
                 IconButton(
-                  icon: const Icon(Icons.close),
+                  icon: const FaIcon(FontAwesomeIcons.xmark, size: 20),
                   onPressed: () => Navigator.of(context).pop(),
                 ),
               ],
@@ -217,7 +218,7 @@ class _PhoneUpdateDialogState extends State<PhoneUpdateDialog> {
                   border: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(12),
                   ),
-                  prefixIcon: const Icon(Icons.phone),
+                  prefixIcon: const FaIcon(FontAwesomeIcons.phone, size: 18),
                   contentPadding: UIConstants.kInputContentPadding,
                 ),
                 style: theme.textTheme.bodyMedium?.copyWith(fontSize: 20),
@@ -288,7 +289,7 @@ class _PhoneUpdateDialogState extends State<PhoneUpdateDialog> {
                     ),
                     TextButton.icon(
                       onPressed: _resendCountdown > 0 ? null : _sendCode,
-                      icon: const Icon(Icons.refresh, size: 18),
+                      icon: const FaIcon(FontAwesomeIcons.arrowsRotate, size: 16),
                       label: Text(
                         _resendCountdown > 0
                             ? 'Resend (${_resendCountdown}s)'
@@ -308,10 +309,10 @@ class _PhoneUpdateDialogState extends State<PhoneUpdateDialog> {
                 ),
                 child: Row(
                   children: [
-                    Icon(
-                      Icons.error_outline,
+                    FaIcon(
+                      FontAwesomeIcons.circleExclamation,
                       color: theme.colorScheme.error,
-                      size: 20,
+                      size: 18,
                     ),
                     const SizedBox(width: 8),
                     Expanded(

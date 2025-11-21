@@ -2,6 +2,7 @@ import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:provider/provider.dart';
 
 // HomeScreen not used in this test to avoid Firebase initialization.
@@ -41,7 +42,7 @@ void main() {
                 );
               }
             },
-            icon: const Icon(Icons.report),
+            icon: const FaIcon(FontAwesomeIcons.triangleExclamation, size: 20),
             label: const Text('Report car'),
           );
         }),

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 // ignore: depend_on_referenced_packages
 import 'package:intl_phone_field/intl_phone_field.dart';
 
@@ -145,7 +146,7 @@ class _LoginScreenState extends State<LoginScreen> {
                       child: Row(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Icon(Icons.error_outline, color: theme.colorScheme.error),
+                          FaIcon(FontAwesomeIcons.circleExclamation, color: theme.colorScheme.error, size: 20),
                           const SizedBox(width: 8),
                           Expanded(
                             child: Text(
@@ -180,7 +181,7 @@ class _LoginScreenState extends State<LoginScreen> {
                               width: 0,
                               height: 0,
                             )
-                          : const Icon(Icons.send),
+                          : const FaIcon(FontAwesomeIcons.paperPlane, size: 18),
                       onPressed: _loading ? () {} : _continue,
                       showLoading: _loading,
                     ),
