@@ -40,8 +40,51 @@ dev_dependencies:
   flutter_test:
     sdk: flutter
   flutter_lints: ^6.0.0
+  flutter_native_splash: ^2.4.3
 
 flutter:
   uses-material-design: true
   assets:
     - assets/
+
+# Splash screen configuration
+flutter_native_splash:
+  # Background color for light mode (primary blue from Material Design)
+  color: "#2196F3"
+  
+  # Background color for dark mode
+  color_dark: "#1565C0"
+  
+  # Splash image/icon - comment out for now until we have a proper PNG
+  # image: assets/splash_logo.png
+  
+  # Branding image (optional, shows at bottom)
+  # branding: assets/splash_logo.png
+  
+  # Image mode: contain (default) or cover
+  # image_mode: contain
+  
+  # Android specific settings
+  android: true
+  android_12:
+    # Android 12+ specific settings
+    image: assets/splash_logo.png
+    color: "#2196F3"
+    color_dark: "#1565C0"
+    # Icon background color (for adaptive icon)
+    icon_background_color: "#2196F3"
+    icon_background_color_dark: "#1565C0"
+  
+  # iOS specific settings
+  ios: true
+  ios_content_mode: center
+  
+  # Web settings (optional)
+  web: false
+  
+  # Full screen mode
+  fullscreen: true
+  
+  # Info.plist settings for iOS
+  info_plist_files:
+    - 'ios/Runner/Info.plist'

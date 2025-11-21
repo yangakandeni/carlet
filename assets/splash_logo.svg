@@ -1,0 +1,32 @@
+<svg width="200" height="200" viewBox="0 0 200 200" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <!-- Simple car icon with notification badge -->
+  <g id="car-icon">
+    <!-- Car body -->
+    <path d="M40 100 L50 80 L70 80 L80 60 L120 60 L130 80 L150 80 L160 100 L160 130 L150 140 L50 140 L40 130 Z" 
+          fill="#2196F3" 
+          stroke="#1976D2" 
+          stroke-width="3"/>
+    
+    <!-- Windows -->
+    <path d="M75 75 L85 65 L115 65 L125 75 L125 95 L75 95 Z" 
+          fill="#90CAF9" 
+          opacity="0.8"/>
+    
+    <!-- Left wheel -->
+    <circle cx="65" cy="140" r="15" fill="#424242" stroke="#212121" stroke-width="2"/>
+    <circle cx="65" cy="140" r="8" fill="#757575"/>
+    
+    <!-- Right wheel -->
+    <circle cx="135" cy="140" r="15" fill="#424242" stroke="#212121" stroke-width="2"/>
+    <circle cx="135" cy="140" r="8" fill="#757575"/>
+    
+    <!-- Notification badge -->
+    <circle cx="150" cy="70" r="20" fill="#FF5722"/>
+    <text x="150" y="77" text-anchor="middle" fill="white" font-size="20" font-weight="bold" font-family="Arial">!</text>
+  </g>
+  
+  <!-- App name -->
+  <text x="100" y="175" text-anchor="middle" fill="#1976D2" font-size="24" font-weight="bold" font-family="Arial, sans-serif">
+    Carlet
+  </text>
+</svg>
