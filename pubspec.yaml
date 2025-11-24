@@ -49,13 +49,11 @@ flutter:
 
 # Splash screen configuration
 flutter_native_splash:
-  # Background color for light mode (primary blue from Material Design)
-  color: "#2196F3"
+  # Background color - white for both light and dark mode
+  color: "#FFFFFF"
+  color_dark: "#FFFFFF"
   
-  # Background color for dark mode
-  color_dark: "#1565C0"
-  
-  # Splash image/icon
+  # Splash image/icon - centered
   image: assets/carlet-logo.png
   
   # Android specific settings
@@ -63,11 +61,11 @@ flutter_native_splash:
   android_12:
     # Android 12+ specific settings
     image: assets/carlet-logo.png
-    color: "#2196F3"
-    color_dark: "#1565C0"
+    color: "#FFFFFF"
+    color_dark: "#FFFFFF"
     # Icon background color (for adaptive icon)
-    icon_background_color: "#2196F3"
-    icon_background_color_dark: "#1565C0"
+    icon_background_color: "#FFFFFF"
+    icon_background_color_dark: "#FFFFFF"
   
   # iOS specific settings
   ios: true
