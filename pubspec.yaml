@@ -55,20 +55,14 @@ flutter_native_splash:
   # Background color for dark mode
   color_dark: "#1565C0"
   
-  # Splash image/icon - comment out for now until we have a proper PNG
-  # image: assets/splash_logo.png
-  
-  # Branding image (optional, shows at bottom)
-  # branding: assets/splash_logo.png
-  
-  # Image mode: contain (default) or cover
-  # image_mode: contain
+  # Splash image/icon
+  image: assets/carlet-logo.png
   
   # Android specific settings
   android: true
   android_12:
     # Android 12+ specific settings
-    image: assets/splash_logo.png
+    image: assets/carlet-logo.png
     color: "#2196F3"
     color_dark: "#1565C0"
     # Icon background color (for adaptive icon)

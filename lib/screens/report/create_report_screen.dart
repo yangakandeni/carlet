@@ -51,6 +51,17 @@ class _CreateReportScreenState extends State<CreateReportScreen> {
       _error = null;
     });
     try {
+      // Validate photo is provided (REQUIRED for security)
+      if (_photo == null) {
+        final friendly = 'A photo is required to verify the issue.';
+        AppSnackbar.showError(context, friendly);
+        setState(() {
+          _error = friendly;
+          _loading = false;
+        });
+        return;
+      }
+
       // Validate license plate upfront
       final plateText = _plate.text.trim();
       if (plateText.isEmpty) {
@@ -82,7 +93,7 @@ class _CreateReportScreenState extends State<CreateReportScreen> {
         }
       }
 
-      final file = _photo != null ? File(_photo!.path) : null;
+      final file = File(_photo!.path);
       final createFn = widget.onCreateReport;
       if (createFn != null) {
         await createFn(
@@ -128,6 +139,21 @@ class _CreateReportScreenState extends State<CreateReportScreen> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
+            // Photo section - REQUIRED
+            Text(
+              'Photo (Required)',
+              style: theme.textTheme.titleMedium?.copyWith(
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+            const SizedBox(height: 8),
+            Text(
+              'A photo is required to verify the issue.',
+              style: theme.textTheme.bodySmall?.copyWith(
+                color: theme.colorScheme.onSurface.withValues(alpha: 0.7),
+              ),
+            ),
+            const SizedBox(height: 12),
             Row(
               children: [
                 Expanded(
@@ -149,10 +175,61 @@ class _CreateReportScreenState extends State<CreateReportScreen> {
             ),
             const SizedBox(height: 12),
             if (_photo != null)
-              ClipRRect(
-                borderRadius: BorderRadius.circular(8),
-                child: Image.file(File(_photo!.path),
-                    height: 200, fit: BoxFit.cover),
+              Stack(
+                children: [
+                  ClipRRect(
+                    borderRadius: BorderRadius.circular(8),
+                    child: Image.file(File(_photo!.path),
+                        height: 200, fit: BoxFit.cover),
+                  ),
+                  Positioned(
+                    top: 8,
+                    right: 8,
+                    child: CircleAvatar(
+                      backgroundColor: theme.colorScheme.surface,
+                      child: IconButton(
+                        icon: FaIcon(
+                          FontAwesomeIcons.xmark,
+                          size: 18,
+                          color: theme.colorScheme.onSurface,
+                        ),
+                        onPressed: () => setState(() => _photo = null),
+                        tooltip: 'Remove photo',
+                      ),
+                    ),
+                  ),
+                ],
+              )
+            else
+              Container(
+                height: 120,
+                decoration: BoxDecoration(
+                  border: Border.all(
+                    color: theme.colorScheme.outline.withValues(alpha: 0.5),
+                    width: 2,
+                    strokeAlign: BorderSide.strokeAlignInside,
+                  ),
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: Center(
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      FaIcon(
+                        FontAwesomeIcons.cameraRetro,
+                        size: 32,
+                        color: theme.colorScheme.onSurface.withValues(alpha: 0.4),
+                      ),
+                      const SizedBox(height: 8),
+                      Text(
+                        'No photo selected',
+                        style: theme.textTheme.bodyMedium?.copyWith(
+                          color: theme.colorScheme.onSurface.withValues(alpha: 0.5),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
               ),
             const SizedBox(height: 16),
             TextField(

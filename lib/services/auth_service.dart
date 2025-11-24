@@ -216,6 +216,7 @@ class AuthService extends ChangeNotifier {
   /// Complete the onboarding flow by writing the provided fields to the
   /// user's document and setting `onboardingComplete` to true.
   /// If onboarding is already completed, this will do nothing and return.
+  /// Throws an exception if the license plate is already registered to another user.
   Future<void> completeOnboarding({
     required String name,
     required String carMake,
@@ -232,13 +233,31 @@ class AuthService extends ChangeNotifier {
       // No-op if onboarding already completed
       return;
     }
+    
+    // Normalize license plate to uppercase without spaces to match
+    // how reports store licensePlate (normalized in ReportService).
+    final normalizedPlate = carPlate.toUpperCase().replaceAll(' ', '');
+    
+    // Check if this license plate is already registered to another user
+    final existingPlateQuery = await _db
+        .collection('users')
+        .where('carPlate', isEqualTo: normalizedPlate)
+        .limit(1)
+        .get();
+    
+    if (existingPlateQuery.docs.isNotEmpty) {
+      final existingUserId = existingPlateQuery.docs.first.id;
+      // Only throw if the plate belongs to a different user
+      if (existingUserId != fbUser.uid) {
+        throw Exception('This license plate is already registered. Please verify your plate number.');
+      }
+    }
+    
     await ref.set({
       'name': name,
       'carMake': carMake,
       'carModel': carModel,
-      // Normalize license plate to uppercase without spaces to match
-      // how reports store licensePlate (normalized in ReportService).
-      'carPlate': carPlate.toUpperCase().replaceAll(' ', ''),
+      'carPlate': normalizedPlate,
       'onboardingComplete': true,
     }, SetOptions(merge: true));
   }

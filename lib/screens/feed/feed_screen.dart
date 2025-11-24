@@ -98,39 +98,6 @@ class _FeedScreenState extends State<FeedScreen> {
                       textAlign: TextAlign.center,
                     ),
                     const SizedBox(height: 28),
-                    // CTA styled to be rounded and shrink-to-fit text width
-                    Theme(
-                      data: Theme.of(context).copyWith(
-                        elevatedButtonTheme: ElevatedButtonThemeData(
-                          style: ButtonStyle(
-                            shape: WidgetStateProperty.all<OutlinedBorder>(
-                              const StadiumBorder(),
-                            ),
-                            minimumSize: WidgetStateProperty.all(const Size(0, 44)),
-                            padding: WidgetStateProperty.all(const EdgeInsets.symmetric(horizontal: 20, vertical: 12)),
-                            backgroundColor: WidgetStateProperty.all(theme.colorScheme.primary),
-                            foregroundColor: WidgetStateProperty.all(theme.colorScheme.onPrimary),
-                          ),
-                        ),
-                      ),
-                      child: IntrinsicWidth(
-                        child: Center(
-                          child: CarletButton.primary(
-                            text: 'Post',
-                            onPressed: () async {
-                              final navigator = Navigator.of(context);
-                              final result = await navigator.pushNamed(
-                                CreateReportScreen.routeName,
-                              );
-                              if (!context.mounted) return;
-                              if (result == true) {
-                                AppSnackbar.showSuccess(context, 'Report posted.');
-                              }
-                            },
-                          ),
-                        ),
-                      ),
-                    ),
                   ],
                 ),
               ),

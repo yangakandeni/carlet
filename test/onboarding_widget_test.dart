@@ -15,6 +15,7 @@ class MockAuthService extends AuthService {
   AppUser? _fakeUser;
   bool completeCalled = false;
   bool simulateFailure = false;
+  bool simulateDuplicatePlate = false;
 
   set fakeUser(AppUser? u) {
     _fakeUser = u;
@@ -31,6 +32,12 @@ class MockAuthService extends AuthService {
     required String carModel,
     required String carPlate,
   }) async {
+    // Optionally simulate a duplicate plate error for testing
+    if (simulateDuplicatePlate) {
+      await Future.delayed(const Duration(milliseconds: 10));
+      throw Exception('This license plate is already registered. Please verify your plate number.');
+    }
+    
     // Optionally simulate a write failure for testing the error UI
     if (simulateFailure) {
       await Future.delayed(const Duration(milliseconds: 10));
@@ -76,12 +83,13 @@ void main() {
         ),
       );
 
-  // Ensure fields are present (name, vehicle, plate)
-  expect(find.byType(TextFormField), findsNWidgets(3));
+  // Ensure fields are present (name, make, model, plate)
+  expect(find.byType(TextFormField), findsNWidgets(4));
 
       // Fill fields
       await tester.enterText(find.widgetWithText(TextFormField, 'Full name'), 'Alice');
-      await tester.enterText(find.widgetWithText(TextFormField, 'Vehicle'), 'Toyota Corolla');
+      await tester.enterText(find.widgetWithText(TextFormField, 'Vehicle make'), 'Toyota');
+      await tester.enterText(find.widgetWithText(TextFormField, 'Vehicle model'), 'Corolla');
       await tester.enterText(find.widgetWithText(TextFormField, 'License plate number'), 'ABC123');
 
       await tester.tap(find.text('Finish and continue'));
@@ -140,7 +148,8 @@ void main() {
 
       // Fill fields
       await tester.enterText(find.widgetWithText(TextFormField, 'Full name'), 'Bob');
-      await tester.enterText(find.widgetWithText(TextFormField, 'Vehicle'), 'Honda Civic');
+      await tester.enterText(find.widgetWithText(TextFormField, 'Vehicle make'), 'Honda');
+      await tester.enterText(find.widgetWithText(TextFormField, 'Vehicle model'), 'Civic');
       await tester.enterText(find.widgetWithText(TextFormField, 'License plate number'), 'XYZ789');
 
       await tester.tap(find.text('Finish and continue'));
@@ -151,6 +160,41 @@ void main() {
       // Should not navigate to home and should show error container
       expect(find.text('Home'), findsNothing);
   expect(find.textContaining('Unable to save your details'), findsOneWidget);
+    });
+
+    testWidgets('error path: shows duplicate plate error', (WidgetTester tester) async {
+      final mockAuth = MockAuthService();
+      mockAuth.fakeUser = const AppUser(id: 'u4', onboardingComplete: false);
+      mockAuth.simulateDuplicatePlate = true;
+
+      await tester.pumpWidget(
+        ChangeNotifierProvider<AuthService>.value(
+          value: mockAuth,
+          child: MaterialApp(
+            routes: {
+              '/': (_) => const OnboardingScreen(),
+              '/home': (_) => const Scaffold(body: Center(child: Text('Home'))),
+            },
+            initialRoute: '/',
+          ),
+        ),
+      );
+
+      // Fill fields with a license plate that's "already registered"
+      await tester.enterText(find.widgetWithText(TextFormField, 'Full name'), 'Charlie');
+      await tester.enterText(find.widgetWithText(TextFormField, 'Vehicle make'), 'Ford');
+      await tester.enterText(find.widgetWithText(TextFormField, 'Vehicle model'), 'Focus');
+      await tester.enterText(find.widgetWithText(TextFormField, 'License plate number'), 'ABC123');
+
+      await tester.tap(find.text('Finish and continue'));
+
+      // Allow async error to propagate and UI to update
+      await tester.pumpAndSettle();
+
+      // Should not navigate to home and should show duplicate plate error
+      expect(find.text('Home'), findsNothing);
+      expect(find.textContaining('already registered'), findsOneWidget);
+      expect(mockAuth.completeCalled, isFalse);
     });
   });
 }

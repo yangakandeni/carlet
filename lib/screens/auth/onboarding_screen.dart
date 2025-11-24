@@ -22,7 +22,8 @@ class OnboardingScreen extends StatefulWidget {
 class _OnboardingScreenState extends State<OnboardingScreen> {
   final _formKey = GlobalKey<FormState>();
   final _nameCtrl = TextEditingController();
-  final _vehicleCtrl = TextEditingController();
+  final _makeCtrl = TextEditingController();
+  final _modelCtrl = TextEditingController();
   final _plateCtrl = TextEditingController();
   bool _loading = false;
   String? _error;
@@ -45,37 +46,29 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
     }
     // Add listeners for real-time validation
     _nameCtrl.addListener(_validateForm);
-    _vehicleCtrl.addListener(_validateForm);
+    _makeCtrl.addListener(_validateForm);
+    _modelCtrl.addListener(_validateForm);
     _plateCtrl.addListener(_validateForm);
   }
 
   @override
   void dispose() {
     _nameCtrl.dispose();
-    _vehicleCtrl.dispose();
+    _makeCtrl.dispose();
+    _modelCtrl.dispose();
     _plateCtrl.dispose();
     super.dispose();
   }
 
   void _validateForm() {
     final nameValid = _nameCtrl.text.trim().isNotEmpty;
-    final vehicleValid = _validateVehicle(_vehicleCtrl.text) == null;
+    final makeValid = _makeCtrl.text.trim().isNotEmpty;
+    final modelValid = _modelCtrl.text.trim().isNotEmpty;
     final plateValid = _validatePlate(_plateCtrl.text) == null;
-    final newValid = nameValid && vehicleValid && plateValid;
+    final newValid = nameValid && makeValid && modelValid && plateValid;
     if (newValid != _isFormValid) {
       setState(() => _isFormValid = newValid);
     }
-  }
-
-  String? _validateVehicle(String? v) {
-    if (v == null || v.trim().isEmpty) {
-      return 'Please enter your vehicle (e.g., Toyota Corolla)';
-    }
-    final parts = v.trim().split(' ');
-    if (parts.length < 2) {
-      return 'Please enter both make and model (e.g., Toyota Corolla)';
-    }
-    return null;
   }
 
   String? _validatePlate(String? v) {
@@ -104,22 +97,21 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
       _error = null;
     });
     try {
-      // Parse vehicle input into make and model
-      final vehicleText = _vehicleCtrl.text.trim();
-      final parts = vehicleText.split(' ');
-      final carMake = parts.isNotEmpty ? parts[0] : '';
-      final carModel = parts.length > 1 ? parts.sublist(1).join(' ') : '';
-      
       await context.read<AuthService>().completeOnboarding(
             name: _nameCtrl.text.trim(),
-            carMake: carMake,
-            carModel: carModel,
+            carMake: _makeCtrl.text.trim(),
+            carModel: _modelCtrl.text.trim(),
             carPlate: _plateCtrl.text.trim(),
           );
       if (!mounted) return;
       Navigator.pushReplacementNamed(context, HomeScreen.routeName);
     } catch (e) {
-      final friendly = 'Unable to save your details. Please try again.';
+      // Check if this is a duplicate plate error
+      final errorMsg = e.toString();
+      final friendly = errorMsg.contains('already registered')
+          ? 'This license plate is already registered. Please verify your plate number.'
+          : 'Unable to save your details. Please try again.';
+      
       // show prominent feedback and also keep inline error area populated
       if (mounted) AppSnackbar.showError(context, friendly);
       setState(() => _error = friendly);
@@ -178,16 +170,34 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                               ),
                               const SizedBox(height: 16),
                               TextFormField(
-                                controller: _vehicleCtrl,
+                                controller: _makeCtrl,
                                 decoration: InputDecoration(
-                                  labelText: 'Vehicle',
-                                  hintText: 'e.g., Toyota Corolla',
+                                  labelText: 'Vehicle make',
+                                  hintText: 'e.g., Toyota',
                                   border: OutlineInputBorder(
                                     borderRadius: BorderRadius.circular(12),
                                   ),
                                   contentPadding: UIConstants.kInputContentPadding,
                                 ),
-                                validator: _validateVehicle,
+                                validator: (v) => (v == null || v.trim().isEmpty)
+                                    ? 'Please enter the vehicle make'
+                                    : null,
+                                textInputAction: TextInputAction.next,
+                              ),
+                              const SizedBox(height: 16),
+                              TextFormField(
+                                controller: _modelCtrl,
+                                decoration: InputDecoration(
+                                  labelText: 'Vehicle model',
+                                  hintText: 'e.g., Corolla',
+                                  border: OutlineInputBorder(
+                                    borderRadius: BorderRadius.circular(12),
+                                  ),
+                                  contentPadding: UIConstants.kInputContentPadding,
+                                ),
+                                validator: (v) => (v == null || v.trim().isEmpty)
+                                    ? 'Please enter the vehicle model'
+                                    : null,
                                 textInputAction: TextInputAction.next,
                               ),
                               const SizedBox(height: 16),

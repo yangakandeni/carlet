@@ -195,7 +195,7 @@ class ReportCard extends StatelessWidget {
           if (onResolve != null && report.status == 'open') ...[
             const SizedBox(height: 12),
             Align(
-              alignment: Alignment.centerRight,
+              alignment: Alignment.centerLeft,
               child: FilledButton.icon(
                 onPressed: onResolve,
                 icon: const FaIcon(FontAwesomeIcons.circleCheck, size: 16),
