@@ -1,0 +1,40 @@
+# Android Signing Configuration Template
+#
+# This file contains the keystore information for signing your Android release builds.
+# 
+# ⚠️ SECURITY WARNING: This file should NEVER be committed to git!
+# It is already in .gitignore - keep it that way.
+#
+# Setup Instructions:
+# 1. Create your keystore following docs/ANDROID_RELEASE_SIGNING.md
+# 2. Copy this template to android/key.properties
+# 3. Fill in your actual keystore information
+# 4. Store passwords securely in a password manager
+#
+# The keystore file path can be absolute or relative to android/app/
+# Recommended: Store keystore outside the project directory for added security
+
+# Password for the keystore file
+storePassword=carlet
+
+# Password for the key within the keystore
+# Can be the same as storePassword
+keyPassword=carlet!
+
+# Alias name for the key in the keystore
+# This is the alias you provided when creating the keystore
+keyAlias=carlet-release
+
+# Path to the keystore file
+# Examples:
+#   Absolute path (recommended): /Users/yourname/.android/keystores/carlet-release-key.jks
+#   Relative path: ../keystores/carlet-release-key.jks
+#   Home directory: ~/keystores/carlet-release-key.jks
+storeFile=/Users/techolosh/.android/keystores/carlet-release-key.jks
+
+# Additional Notes:
+# - Back up your keystore file to a secure location (1Password, encrypted drive, etc.)
+# - If you lose this keystore, you cannot update your app on Play Store
+# - Never share this file via email, Slack, or commit to git
+# - For team collaboration, share keystore securely (encrypted email, secure file sharing)
+# - For CI/CD, use environment variables or secure secret management

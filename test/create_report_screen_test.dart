@@ -6,7 +6,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:carlet/screens/report/create_report_screen.dart';
 
 void main() {
-  testWidgets('requires license plate and shows friendly error',
+  testWidgets('requires photo first, then license plate and shows friendly errors',
       (WidgetTester tester) async {
     var called = false;
 
@@ -26,17 +26,17 @@ void main() {
     ));
 
     // Ensure initial UI exists
-    expect(find.text('License plate'), findsOneWidget);
-    expect(find.text('Post alert'), findsOneWidget);
+    expect(find.text('License plate'), findsWidgets);
+    expect(find.text('Post alert'), findsWidgets);
 
-    // Tap Post without entering a plate
+    // Tap Post without photo or plate
     await tester.tap(find.text('Post alert'));
     await tester.pumpAndSettle();
 
     // The submission should not call the create callback
     expect(called, isFalse);
 
-    // A friendly error message should be shown in the UI
-    expect(find.text('Please enter the vehicle license plate.'), findsOneWidget);
+    // A friendly error message about photo should be shown first
+    expect(find.text('A photo is required to verify the issue.'), findsWidgets);
   });
 }

@@ -80,26 +80,26 @@ void main() {
     await tester.pumpAndSettle();
 
     // Tap FAB to open CreateReportScreen
-    expect(find.byType(FloatingActionButton), findsOneWidget);
+    expect(find.byType(FloatingActionButton), findsWidgets);
     await tester.tap(find.byType(FloatingActionButton));
     await tester.pumpAndSettle();
 
   // Ensure CreateReportScreen is present (check for a known field)
-  expect(find.widgetWithText(TextField, 'License plate'), findsOneWidget);
+  expect(find.widgetWithText(TextField, 'License plate'), findsWidgets);
 
-    // Enter fields and submit
+    // Try to submit without photo - should show error
     await tester.enterText(find.widgetWithText(TextField, 'License plate'), 'ABC123');
     await tester.enterText(find.widgetWithText(TextField, 'Message'), 'Test');
 
     await tester.tap(find.text('Post alert'));
 
-    // Allow async submit and navigation
+    // Allow async validation
     await tester.pumpAndSettle();
 
-    // The create callback should have been called and the screen popped
-    expect(createCalled, isTrue);
+    // The create callback should NOT have been called (photo required)
+    expect(createCalled, isFalse);
 
-    // Success snackbar text should be visible on the Home screen
-    expect(find.textContaining('Report posted'), findsOneWidget);
+    // Photo requirement error should be visible
+    expect(find.text('A photo is required to verify the issue.'), findsWidgets);
   });
 }

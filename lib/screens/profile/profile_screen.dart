@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:provider/provider.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 import 'package:carlet/services/auth_service.dart';
 import 'package:carlet/models/user_model.dart';
@@ -238,6 +239,27 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 },
                 icon: const FaIcon(FontAwesomeIcons.rightFromBracket, size: 18),
                 label: const Text('Sign out'),
+              ),
+              const SizedBox(height: 16),
+              // Privacy Policy Link
+              TextButton.icon(
+                onPressed: () async {
+                  // TODO: Replace with your actual hosted privacy policy URL
+                  // After hosting on GitHub Pages, Firebase, or your own domain
+                  const privacyUrl = 'https://yangakandeni.github.io/carlet/PRIVACY_POLICY';
+                  final uri = Uri.parse(privacyUrl);
+                  if (await canLaunchUrl(uri)) {
+                    await launchUrl(uri, mode: LaunchMode.externalApplication);
+                  } else {
+                    if (!mounted) return;
+                    AppSnackbar.showError(context, 'Could not open privacy policy');
+                  }
+                },
+                icon: const FaIcon(FontAwesomeIcons.shieldHalved, size: 16),
+                label: const Text('Privacy Policy'),
+                style: TextButton.styleFrom(
+                  foregroundColor: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.6),
+                ),
               ),
               const SizedBox(height: 24),
             ],
