@@ -30,7 +30,6 @@ class Report {
     this.commentCount = 0,
     this.likedBy = const [],
   });
-  
 
   factory Report.fromMap(String id, Map<String, dynamic> map) {
     DateTime? parseDate(dynamic v) {
@@ -38,7 +37,9 @@ class Report {
       if (v is DateTime) return v;
       if (v is Timestamp) return v.toDate().toUtc();
       if (v is String) return DateTime.tryParse(v)?.toUtc();
-      if (v is num) return DateTime.fromMillisecondsSinceEpoch(v.toInt(), isUtc: true);
+      if (v is num) {
+        return DateTime.fromMillisecondsSinceEpoch(v.toInt(), isUtc: true);
+      }
       return null;
     }
 
@@ -57,7 +58,8 @@ class Report {
       message: map['message'] as String?,
       status: (map['status'] as String?) ?? 'open',
       // Use parseDate to handle Timestamp, String, numeric epoch, or DateTime.
-      timestamp: parseDate(map['timestamp']) ?? DateTime.fromMillisecondsSinceEpoch(0, isUtc: true),
+      timestamp: parseDate(map['timestamp']) ??
+          DateTime.fromMillisecondsSinceEpoch(0, isUtc: true),
       resolvedAt: parseDate(map['resolvedAt']),
       expireAt: parseDate(map['expireAt']),
       anonymous: (map['anonymous'] as bool?) ?? false,
@@ -73,14 +75,14 @@ class Report {
       'licensePlate': licensePlate,
       'message': message,
       'status': status,
-      'timestamp': timestamp.toIso8601String(),
+      'timestamp': Timestamp.fromDate(timestamp),
       'anonymous': anonymous,
       'likeCount': likeCount,
       'commentCount': commentCount,
       'likedBy': likedBy,
     };
-    if (resolvedAt != null) m['resolvedAt'] = resolvedAt!.toIso8601String();
-    if (expireAt != null) m['expireAt'] = expireAt!.toIso8601String();
+    if (resolvedAt != null) m['resolvedAt'] = Timestamp.fromDate(resolvedAt!);
+    if (expireAt != null) m['expireAt'] = Timestamp.fromDate(expireAt!);
     return m;
   }
 }

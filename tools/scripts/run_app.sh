@@ -178,7 +178,7 @@ if [[ "$ENV" == "DEV" ]]; then
   "project_info": {
     "project_number": "0",
     "project_id": "$project_id",
-    "storage_bucket": ""
+    "storage_bucket": "$project_id.appspot.com"
   },
   "client": [
     {

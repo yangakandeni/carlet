@@ -75,23 +75,23 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
     if (v == null || v.trim().isEmpty) {
       return 'Please enter the license plate';
     }
-    
+
     // Validate South African license plate format
     if (!isValidSouthAfricanPlate(v.trim())) {
       return getPlateValidationError();
     }
-    
+
     return null;
   }
 
   Future<void> _submit() async {
     if (_loading) return; // Prevent double-tap
-    
+
     // Validate form first
     if (!_formKey.currentState!.validate()) {
       return;
     }
-    
+
     setState(() {
       _loading = true;
       _error = null;
@@ -101,7 +101,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
             name: _nameCtrl.text.trim(),
             carMake: _makeCtrl.text.trim(),
             carModel: _modelCtrl.text.trim(),
-            carPlate: _plateCtrl.text.trim(),
+            carPlate: _plateCtrl.text.trim().toUpperCase().replaceAll(' ', ''),
           );
       if (!mounted) return;
       Navigator.pushReplacementNamed(context, HomeScreen.routeName);
@@ -111,7 +111,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
       final friendly = errorMsg.contains('already registered')
           ? 'This license plate is already registered. Please verify your plate number.'
           : 'Unable to save your details. Please try again.';
-      
+
       // show prominent feedback and also keep inline error area populated
       if (mounted) AppSnackbar.showError(context, friendly);
       setState(() => _error = friendly);
@@ -161,11 +161,13 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                                   border: OutlineInputBorder(
                                     borderRadius: BorderRadius.circular(12),
                                   ),
-                                  contentPadding: UIConstants.kInputContentPadding,
+                                  contentPadding:
+                                      UIConstants.kInputContentPadding,
                                 ),
-                                validator: (v) => (v == null || v.trim().isEmpty)
-                                    ? 'Please enter your name'
-                                    : null,
+                                validator: (v) =>
+                                    (v == null || v.trim().isEmpty)
+                                        ? 'Please enter your name'
+                                        : null,
                                 textInputAction: TextInputAction.next,
                               ),
                               const SizedBox(height: 16),
@@ -177,11 +179,14 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                                   border: OutlineInputBorder(
                                     borderRadius: BorderRadius.circular(12),
                                   ),
-                                  contentPadding: UIConstants.kInputContentPadding,
+                                  contentPadding:
+                                      UIConstants.kInputContentPadding,
                                 ),
-                                validator: (v) => (v == null || v.trim().isEmpty)
-                                    ? 'Please enter the vehicle make'
-                                    : null,
+                                textCapitalization: TextCapitalization.words,
+                                validator: (v) =>
+                                    (v == null || v.trim().isEmpty)
+                                        ? 'Please enter the vehicle make'
+                                        : null,
                                 textInputAction: TextInputAction.next,
                               ),
                               const SizedBox(height: 16),
@@ -193,11 +198,14 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                                   border: OutlineInputBorder(
                                     borderRadius: BorderRadius.circular(12),
                                   ),
-                                  contentPadding: UIConstants.kInputContentPadding,
+                                  contentPadding:
+                                      UIConstants.kInputContentPadding,
                                 ),
-                                validator: (v) => (v == null || v.trim().isEmpty)
-                                    ? 'Please enter the vehicle model'
-                                    : null,
+                                textCapitalization: TextCapitalization.words,
+                                validator: (v) =>
+                                    (v == null || v.trim().isEmpty)
+                                        ? 'Please enter the vehicle model'
+                                        : null,
                                 textInputAction: TextInputAction.next,
                               ),
                               const SizedBox(height: 16),
@@ -208,14 +216,16 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                                   border: OutlineInputBorder(
                                     borderRadius: BorderRadius.circular(12),
                                   ),
-                                  contentPadding: UIConstants.kInputContentPadding,
+                                  contentPadding:
+                                      UIConstants.kInputContentPadding,
                                 ),
                                 inputFormatters: const [
                                   UpperCaseTextFormatter(),
                                 ],
                                 validator: _validatePlate,
                                 textInputAction: TextInputAction.done,
-                                onFieldSubmitted: (_) => _isFormValid ? _submit() : null,
+                                onFieldSubmitted: (_) =>
+                                    _isFormValid ? _submit() : null,
                               ),
                               const SizedBox(height: 20),
                               if (_error != null) ...[
@@ -226,15 +236,20 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                                     borderRadius: BorderRadius.circular(8),
                                   ),
                                   child: Row(
-                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
                                     children: [
-                                      FaIcon(FontAwesomeIcons.circleExclamation, color: theme.colorScheme.error, size: 20),
+                                      FaIcon(FontAwesomeIcons.circleExclamation,
+                                          color: theme.colorScheme.error,
+                                          size: 20),
                                       const SizedBox(width: 8),
                                       Expanded(
                                         child: Text(
                                           _error!,
-                                          style: theme.textTheme.bodyMedium?.copyWith(
-                                            color: theme.colorScheme.onErrorContainer,
+                                          style: theme.textTheme.bodyMedium
+                                              ?.copyWith(
+                                            color: theme
+                                                .colorScheme.onErrorContainer,
                                           ),
                                         ),
                                       ),
@@ -266,7 +281,8 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                         const SizedBox(height: 8),
                         Text(
                           'Note: vehicle details cannot be changed after completing onboarding.',
-                          style: theme.textTheme.bodySmall?.copyWith(color: onSurfaceReduced),
+                          style: theme.textTheme.bodySmall
+                              ?.copyWith(color: onSurfaceReduced),
                           textAlign: TextAlign.center,
                         ),
                       ],

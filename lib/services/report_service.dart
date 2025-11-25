@@ -1,6 +1,7 @@
 import 'dart:io';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart' as fb;
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:uuid/uuid.dart';
 
@@ -9,7 +10,9 @@ import 'package:carlet/services/comment_service.dart';
 
 class ReportService {
   final FirebaseFirestore _db = FirebaseFirestore.instance;
-  final FirebaseStorage _storage = FirebaseStorage.instance;
+  // Get storage instance dynamically to ensure emulator connection is respected
+  FirebaseStorage get _storage => FirebaseStorage.instance;
+  final fb.FirebaseAuth _auth = fb.FirebaseAuth.instance;
   final _uuid = const Uuid();
   final _commentService = CommentService();
 
@@ -26,7 +29,8 @@ class ReportService {
 
   Future<String?> _uploadPhoto(String reportId, File? file) async {
     if (file == null) return null;
-    final ref = _storage.ref().child('reports/$reportId.jpg');
+    // Use refFromURL for emulators or ref() for production
+    final ref = _storage.ref('reports/$reportId/photo.jpg');
     final task = await ref.putFile(file);
     return await task.ref.getDownloadURL();
   }
@@ -38,6 +42,15 @@ class ReportService {
     File? photoFile,
     bool anonymous = false,
   }) async {
+    // Verify user is authenticated before attempting upload
+    final currentUser = _auth.currentUser;
+    if (currentUser == null) {
+      throw Exception('User must be authenticated to create a report');
+    }
+
+    // Force token refresh to ensure auth is valid
+    await currentUser.getIdToken(true);
+
     final id = _uuid.v4();
 
     String? photoUrl;
@@ -69,7 +82,7 @@ class ReportService {
     // desired deletion time to enable TTL deletion if configured.
     await docRef.update({
       'status': 'resolved',
-      'resolvedAt': now.toIso8601String(),
+      'resolvedAt': Timestamp.fromDate(now),
       'expireAt': Timestamp.fromDate(now.add(const Duration(minutes: 30))),
     });
 

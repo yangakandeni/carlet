@@ -84,7 +84,8 @@ class _CommentsScreenState extends State<CommentsScreen> {
           )
               .catchError((e) {
             if (!mounted) return;
-            messenger.showSnackBar(SnackBar(content: Text('Failed to add reaction: $e')));
+            messenger.showSnackBar(
+                SnackBar(content: Text('Failed to add reaction: $e')));
           });
         },
       ),
@@ -185,12 +186,15 @@ class _CommentsScreenState extends State<CommentsScreen> {
                             child: RichText(
                               text: TextSpan(
                                 style: theme.textTheme.bodyMedium?.copyWith(
-                                  color: theme.colorScheme.onSurface.withValues(alpha: 0.6),
+                                  color: theme.colorScheme.onSurface
+                                      .withValues(alpha: 0.6),
                                 ),
                                 children: [
-                                  TextSpan(text: 'Replying to ', style: TextStyle(
-                                    fontSize: theme.textTheme.bodyMedium?.fontSize
-                                  )),
+                                  TextSpan(
+                                      text: 'Replying to ',
+                                      style: TextStyle(
+                                          fontSize: theme
+                                              .textTheme.bodyMedium?.fontSize)),
                                   TextSpan(
                                     text: _replyToUserName,
                                     style: TextStyle(
@@ -203,7 +207,8 @@ class _CommentsScreenState extends State<CommentsScreen> {
                             ),
                           ),
                           IconButton(
-                            icon: const FaIcon(FontAwesomeIcons.xmark, size: 16),
+                            icon:
+                                const FaIcon(FontAwesomeIcons.xmark, size: 16),
                             onPressed: () {
                               setState(() {
                                 _replyToCommentId = null;
@@ -219,7 +224,7 @@ class _CommentsScreenState extends State<CommentsScreen> {
                     ),
                   SafeArea(
                     child: Padding(
-                      padding: const EdgeInsets.fromLTRB(8.0, 8.0, 8.0, 0),
+                      padding: const EdgeInsets.all(8.0),
                       child: Row(
                         children: [
                           Expanded(
@@ -236,7 +241,8 @@ class _CommentsScreenState extends State<CommentsScreen> {
                                 focusedBorder: OutlineInputBorder(
                                   borderRadius: BorderRadius.circular(24),
                                 ),
-                                contentPadding: UIConstants.kInputContentPadding,
+                                contentPadding:
+                                    UIConstants.kInputContentPadding,
                               ),
                               maxLines: null,
                               textInputAction: TextInputAction.send,
@@ -262,22 +268,22 @@ class _CommentsScreenState extends State<CommentsScreen> {
           if (isResolved)
             Container(
               padding: const EdgeInsets.all(16),
-                color: theme.colorScheme.surfaceContainerHighest,
+              color: theme.colorScheme.surfaceContainerHighest,
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                    FaIcon(
-                      FontAwesomeIcons.lock,
-                      size: 16,
+                  FaIcon(
+                    FontAwesomeIcons.lock,
+                    size: 16,
+                    color: theme.colorScheme.onSurfaceVariant,
+                  ),
+                  const SizedBox(width: 8),
+                  Text(
+                    'This post is resolved. Comments are read-only.',
+                    style: theme.textTheme.bodySmall?.copyWith(
                       color: theme.colorScheme.onSurfaceVariant,
                     ),
-                  const SizedBox(width: 8),
-                    Text(
-                      'This post is resolved. Comments are read-only.',
-                      style: theme.textTheme.bodySmall?.copyWith(
-                        color: theme.colorScheme.onSurfaceVariant,
-                      ),
-                    ),
+                  ),
                 ],
               ),
             ),
@@ -352,7 +358,8 @@ class _CommentTile extends StatelessWidget {
                           Text(
                             _formatTimestamp(comment.timestamp),
                             style: theme.textTheme.bodySmall?.copyWith(
-                              color: theme.colorScheme.onSurface.withValues(alpha: 0.6),
+                              color: theme.colorScheme.onSurface
+                                  .withValues(alpha: 0.6),
                             ),
                           ),
                         ],
@@ -377,14 +384,17 @@ class _CommentTile extends StatelessWidget {
                           // Reply button
                           if (!isResolved)
                             InkWell(
-                              onTap: () => onReply(comment.id, comment.userName ?? 'User'),
+                              onTap: () => onReply(
+                                  comment.id, comment.userName ?? 'User'),
                               borderRadius: BorderRadius.circular(20),
                               child: Padding(
-                                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                                padding: const EdgeInsets.symmetric(
+                                    horizontal: 8, vertical: 4),
                                 child: Text(
                                   'Reply',
                                   style: theme.textTheme.bodyMedium?.copyWith(
-                                    color: theme.colorScheme.onSurface.withValues(alpha: 0.8),
+                                    color: theme.colorScheme.onSurface
+                                        .withValues(alpha: 0.8),
                                     fontWeight: FontWeight.w600,
                                   ),
                                 ),
@@ -406,7 +416,8 @@ class _CommentTile extends StatelessWidget {
             child: Column(
               children: replies.map((reply) {
                 return Padding(
-                  padding: const EdgeInsets.only(bottom: 16, left: 16, right: 16),
+                  padding:
+                      const EdgeInsets.only(bottom: 16, left: 16, right: 16),
                   child: InkWell(
                     onLongPress: isResolved ? null : () => onLongPress(reply),
                     child: Row(
@@ -445,7 +456,8 @@ class _CommentTile extends StatelessWidget {
                                   Text(
                                     _formatTimestamp(reply.timestamp),
                                     style: theme.textTheme.bodySmall?.copyWith(
-                                      color: theme.colorScheme.onSurface.withValues(alpha: 0.6),
+                                      color: theme.colorScheme.onSurface
+                                          .withValues(alpha: 0.6),
                                       fontSize: 12,
                                     ),
                                   ),
@@ -471,14 +483,18 @@ class _CommentTile extends StatelessWidget {
                                   // Reply button (enable nested replies)
                                   if (!isResolved)
                                     InkWell(
-                                      onTap: () => onReply(reply.id, reply.userName ?? 'User'),
+                                      onTap: () => onReply(
+                                          reply.id, reply.userName ?? 'User'),
                                       borderRadius: BorderRadius.circular(20),
                                       child: Padding(
-                                        padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                                        padding: const EdgeInsets.symmetric(
+                                            horizontal: 6, vertical: 2),
                                         child: Text(
                                           'Reply',
-                                          style: theme.textTheme.bodySmall?.copyWith(
-                                            color: theme.colorScheme.onSurface.withValues(alpha: 0.8),
+                                          style: theme.textTheme.bodySmall
+                                              ?.copyWith(
+                                            color: theme.colorScheme.onSurface
+                                                .withValues(alpha: 0.8),
                                             fontWeight: FontWeight.w600,
                                             fontSize: 12,
                                           ),
@@ -503,8 +519,7 @@ class _CommentTile extends StatelessWidget {
 
   Widget _buildLikeButton(
     BuildContext context,
-    Comment comment,
-    {
+    Comment comment, {
     required bool isThumbsUp,
     bool isSmall = false,
   }) {
@@ -512,10 +527,11 @@ class _CommentTile extends StatelessWidget {
     final userId = currentUserId;
     if (userId == null) return const SizedBox.shrink();
 
-    final reactionType = isThumbsUp ? CommentReaction.thumbsUp : CommentReaction.thumbsDown;
+    final reactionType =
+        isThumbsUp ? CommentReaction.thumbsUp : CommentReaction.thumbsDown;
     final userReaction = comment.reactions[userId];
     final isActive = userReaction == reactionType.emoji;
-    
+
     // Count reactions of this type
     int count = 0;
     for (final reaction in comment.reactions.values) {
@@ -523,22 +539,24 @@ class _CommentTile extends StatelessWidget {
     }
 
     return InkWell(
-      onTap: isResolved ? null : () {
-        if (isActive) {
-          // Remove reaction
-          commentService.removeReaction(
-            commentId: comment.id,
-            userId: userId,
-          );
-        } else {
-          // Add reaction
-          commentService.addReaction(
-            commentId: comment.id,
-            userId: userId,
-            reaction: reactionType,
-          );
-        }
-      },
+      onTap: isResolved
+          ? null
+          : () {
+              if (isActive) {
+                // Remove reaction
+                commentService.removeReaction(
+                  commentId: comment.id,
+                  userId: userId,
+                );
+              } else {
+                // Add reaction
+                commentService.addReaction(
+                  commentId: comment.id,
+                  userId: userId,
+                  reaction: reactionType,
+                );
+              }
+            },
       borderRadius: BorderRadius.circular(20),
       child: Container(
         padding: EdgeInsets.symmetric(
@@ -555,7 +573,9 @@ class _CommentTile extends StatelessWidget {
           mainAxisSize: MainAxisSize.min,
           children: [
             FaIcon(
-              isThumbsUp ? FontAwesomeIcons.thumbsUp : FontAwesomeIcons.thumbsDown,
+              isThumbsUp
+                  ? FontAwesomeIcons.thumbsUp
+                  : FontAwesomeIcons.thumbsDown,
               size: isSmall ? 12 : 14,
               color: theme.colorScheme.onSurface.withValues(alpha: 0.8),
             ),
@@ -563,7 +583,10 @@ class _CommentTile extends StatelessWidget {
               const SizedBox(width: 4),
               Text(
                 '$count',
-                style: (isSmall ? theme.textTheme.bodySmall : theme.textTheme.bodySmall)?.copyWith(
+                style: (isSmall
+                        ? theme.textTheme.bodySmall
+                        : theme.textTheme.bodySmall)
+                    ?.copyWith(
                   color: theme.colorScheme.onSurface.withValues(alpha: 0.8),
                   fontSize: isSmall ? 11 : 12,
                 ),
@@ -584,6 +607,6 @@ class _CommentTile extends StatelessWidget {
     if (diff.inDays < 1) return '${diff.inHours}h ago';
     if (diff.inDays < 7) return '${diff.inDays}d ago';
 
-  return timestamp.toLocal().toString().split(' ')[0];
+    return timestamp.toLocal().toString().split(' ')[0];
   }
 }

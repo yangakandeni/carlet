@@ -17,10 +17,20 @@ import 'package:carlet/utils/firebase_emulators.dart';
 Future<void> firebaseMessagingBackgroundHandler(RemoteMessage message) async {
   // Prevent Google Fonts from trying to access file system in background isolate
   GoogleFonts.config.allowRuntimeFetching = false;
-  
-  await Firebase.initializeApp(
-    options: DefaultFirebaseOptions.currentPlatform,
-  );
+
+  // Initialize Firebase with error handling for duplicate app
+  try {
+    await Firebase.initializeApp(
+      options: DefaultFirebaseOptions.currentPlatform,
+    );
+  } catch (e) {
+    if (e.toString().contains('duplicate-app')) {
+      // Firebase already initialized, safe to continue
+      debugPrint('[Firebase] App already initialized in background handler');
+    } else {
+      rethrow;
+    }
+  }
 
   // If compiled with --dart-define=USE_EMULATORS=true, connect to local emulators
   await connectToFirebaseEmulators();
@@ -28,9 +38,20 @@ Future<void> firebaseMessagingBackgroundHandler(RemoteMessage message) async {
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  await Firebase.initializeApp(
-    options: DefaultFirebaseOptions.currentPlatform,
-  );
+
+  // Initialize Firebase with error handling for duplicate app
+  try {
+    await Firebase.initializeApp(
+      options: DefaultFirebaseOptions.currentPlatform,
+    );
+  } catch (e) {
+    if (e.toString().contains('duplicate-app')) {
+      // Firebase already initialized, safe to continue
+      debugPrint('[Firebase] App already initialized, continuing...');
+    } else {
+      rethrow;
+    }
+  }
 
   // Connect to Firebase Emulators if USE_EMULATORS=true
   await connectToFirebaseEmulators();

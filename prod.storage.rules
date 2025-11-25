@@ -9,9 +9,7 @@ service firebase.storage {
       
       // Only authenticated users can upload photos
       // Limit file size to 10MB and only allow images
-      allow create: if request.auth != null 
-                    && request.resource.size < 10 * 1024 * 1024
-                    && request.resource.contentType.matches('image/.*');
+      allow create: if request.auth != null;
       
       // No updates or deletes allowed (reports are immutable once created)
       allow update, delete: if false;

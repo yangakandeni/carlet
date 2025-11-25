@@ -36,7 +36,8 @@ class _PhoneVerificationScreenState extends State<PhoneVerificationScreen> {
     // automatically start verification so the user lands directly on the
     // OTP entry UI.
     _phoneController.text = widget.initialPhone;
-    _completePhoneNumber = normalizePhone(widget.initialPhone) ?? widget.initialPhone;
+    _completePhoneNumber =
+        normalizePhone(widget.initialPhone) ?? widget.initialPhone;
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (!mounted) return;
       if (!_codeSent) {
@@ -93,7 +94,7 @@ class _PhoneVerificationScreenState extends State<PhoneVerificationScreen> {
     final raw = (_phoneController.text.trim().isNotEmpty)
         ? _phoneController.text.trim()
         : _completePhoneNumber;
-  final normalized = normalizePhone(raw);
+    final normalized = normalizePhone(raw);
     if (normalized == null) {
       setState(() => _error = 'Please enter a valid phone number');
       return;
@@ -120,9 +121,11 @@ class _PhoneVerificationScreenState extends State<PhoneVerificationScreen> {
       // Present a friendly message to the user instead of raw exception text
       String friendly;
       if (e is fb.FirebaseAuthException) {
-        friendly = 'Could not send verification code. Please check the phone number and try again.';
+        friendly =
+            'Could not send verification code. Please check the phone number and try again.';
       } else {
-        friendly = 'Could not send verification code. Please check your internet connection and try again.';
+        friendly =
+            'Could not send verification code. Please check your internet connection and try again.';
       }
       setState(() => _error = friendly);
     } finally {
@@ -156,7 +159,8 @@ class _PhoneVerificationScreenState extends State<PhoneVerificationScreen> {
           case 'invalid-verification-code':
           case 'invalid-verification-id':
           case 'session-expired':
-            friendly = 'The code you entered is invalid or expired. Please check the 6-digit code and try again.';
+            friendly =
+                'The code you entered is invalid or expired. Please check the 6-digit code and try again.';
             break;
           case 'too-many-requests':
             friendly = 'Too many attempts. Please wait a moment and try again.';
@@ -165,7 +169,8 @@ class _PhoneVerificationScreenState extends State<PhoneVerificationScreen> {
             friendly = 'Unable to verify code. Please try again.';
         }
       } else {
-        friendly = 'Unable to verify code. Please check your connection and try again.';
+        friendly =
+            'Unable to verify code. Please check your connection and try again.';
       }
       setState(() => _error = friendly);
       _pinController.clear();
@@ -179,7 +184,7 @@ class _PhoneVerificationScreenState extends State<PhoneVerificationScreen> {
     final theme = Theme.of(context);
     final defaultPinTheme = PinTheme(
       width: 56,
-      height: 60,
+      height: 64,
       textStyle: theme.textTheme.headlineMedium?.copyWith(
         fontWeight: FontWeight.w600,
       ),
@@ -255,26 +260,31 @@ class _PhoneVerificationScreenState extends State<PhoneVerificationScreen> {
                     textAlign: TextAlign.center,
                   ),
                   const SizedBox(height: 32),
-                  Pinput(
-                    controller: _pinController,
-                    length: 6,
-                    defaultPinTheme: defaultPinTheme,
-                    focusedPinTheme: focusedPinTheme,
-                    submittedPinTheme: submittedPinTheme,
-                    errorPinTheme: errorPinTheme,
-                    forceErrorState: _error != null,
-                    pinputAutovalidateMode: PinputAutovalidateMode.onSubmit,
-                    showCursor: true,
-                    onCompleted: _verifyCode,
-                    enabled: !_loading,
+                  // Wrap Pinput to prevent border clipping
+                  Padding(
+                    padding: const EdgeInsets.symmetric(vertical: 4),
+                    child: Pinput(
+                      controller: _pinController,
+                      length: 6,
+                      defaultPinTheme: defaultPinTheme,
+                      focusedPinTheme: focusedPinTheme,
+                      submittedPinTheme: submittedPinTheme,
+                      errorPinTheme: errorPinTheme,
+                      forceErrorState: _error != null,
+                      pinputAutovalidateMode: PinputAutovalidateMode.onSubmit,
+                      showCursor: true,
+                      onCompleted: _verifyCode,
+                      enabled: !_loading,
+                    ),
                   ),
-                  const SizedBox(height: 24),
+                  const SizedBox(height: 10),
                   if (_loading)
                     const Center(child: CircularProgressIndicator())
                   else
                     TextButton.icon(
                       onPressed: _resendCountdown > 0 ? null : _sendCode,
-                      icon: const FaIcon(FontAwesomeIcons.arrowsRotate, size: 18),
+                      icon:
+                          const FaIcon(FontAwesomeIcons.arrowsRotate, size: 18),
                       label: Text(
                         _resendCountdown > 0
                             ? 'Resend code in ${_resendCountdown}s'

@@ -1,11 +1,6 @@
 i  emulators: Starting emulators: auth, firestore, storage
 i  firestore: Firestore Emulator logging to firestore-debug.log
 ✔  firestore: Firestore Emulator UI websocket is running on 9150.
-⚠  Unexpected rules runtime error: WARNING: A terminally deprecated method in sun.misc.Unsafe has been called
-WARNING: sun.misc.Unsafe::arrayBaseOffset has been called by com.google.protobuf.UnsafeUtil$MemoryAccessor (file:/Users/techolosh/.cache/firebase/emulators/cloud-storage-rules-runtime-v1.1.3.jar)
-WARNING: Please consider reporting this to the maintainers of class com.google.protobuf.UnsafeUtil$MemoryAccessor
-WARNING: sun.misc.Unsafe::arrayBaseOffset will be removed in a future release
-
 
 [90m┌─────────────────────────────────────────────────────────────┐[39m
 [90m│[39m ✔  All emulators ready! It is now safe to connect your app. [90m│[39m
@@ -26,3 +21,15 @@ WARNING: sun.misc.Unsafe::arrayBaseOffset will be removed in a future release
 
 Issues? Report them at https://github.com/firebase/firebase-tools/issues and attach the *-debug.log files.
  
+i  To verify the phone number +27717662280, use the code 622396.
+i  To verify the phone number +27717662280, use the code 395722.
+i  To verify the phone number +27717662280, use the code 202834.
+i  To verify the phone number +27717662280, use the code 601855.
+i  To verify the phone number +27717662280, use the code 466743.
+i  To verify the phone number +27717662280, use the code 965502.
+i  To verify the phone number +27785247083, use the code 120299.
+i  To verify the phone number +27717662280, use the code 861455.
+i  To verify the phone number +27717662280, use the code 926028.
+i  storage: Change detected, updating rules for Cloud Storage...
+i  storage: Change detected, updating rules for Cloud Storage...
+i  To verify the phone number +27717662280, use the code 857231.
