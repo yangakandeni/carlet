@@ -44,7 +44,6 @@ class MessagingService {
         toastification.show(
           type: ToastificationType.info,
           style: ToastificationStyle.flatColored,
-          title: Text(notif.title ?? 'New alert'),
           description: Text(notif.body ?? ''),
           alignment: Alignment.bottomCenter,
           autoCloseDuration: const Duration(seconds: 3),

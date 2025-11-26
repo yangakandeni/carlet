@@ -19,12 +19,32 @@ class AuthService extends ChangeNotifier {
   AuthService() {
     _auth = fb.FirebaseAuth.instance;
     _db = FirebaseFirestore.instance;
+    _configureAuthForEmulator();
     _authSub = _auth.authStateChanges().listen(_onAuthChanged);
   }
 
   // Named constructor for tests that avoids subscribing to Firebase auth
   // streams on construction and doesn't initialize Firebase instances.
   AuthService.noInit();
+
+  /// Configure Firebase Auth for emulator environment, especially iOS simulator
+  void _configureAuthForEmulator() {
+    // Check if we're in emulator mode
+    const useEmulators =
+        String.fromEnvironment('USE_EMULATORS', defaultValue: 'false');
+    if (useEmulators == 'true' && kDebugMode) {
+      // Configure Firebase Auth for testing with known test phone numbers
+      try {
+        _auth.setSettings(
+          appVerificationDisabledForTesting: true,
+        );
+        debugPrint(
+            '[AUTH] Configured Firebase Auth for emulator with test phone verification');
+      } catch (e) {
+        debugPrint('[AUTH] Could not configure auth settings: $e');
+      }
+    }
+  }
 
   Future<void> _onAuthChanged(fb.User? user) async {
     _userDocSub?.cancel();
@@ -44,32 +64,88 @@ class AuthService extends ChangeNotifier {
 
   // Phone auth: start verification; return verificationId
   Future<String> startPhoneVerification(String phoneNumber) async {
+    debugPrint('[AUTH] Starting phone verification for: $phoneNumber');
+
+    // In DEV + emulator mode, simulate OTP to avoid iOS simulator crash
+    const useEmulators =
+        String.fromEnvironment('USE_EMULATORS', defaultValue: 'false');
+    if (useEmulators == 'true' && kDebugMode) {
+      debugPrint(
+          '[AUTH] Emulator mode – using simulated OTP flow (code=123456)');
+      return 'simulated-verification-id';
+    }
+
     final completer = Completer<String>();
-    await _auth.verifyPhoneNumber(
-      phoneNumber: phoneNumber,
-      verificationCompleted: (fb.PhoneAuthCredential credential) async {
-        // Auto-resolve on Android; sign-in directly
-        await _auth.signInWithCredential(credential);
-      },
-      verificationFailed: (fb.FirebaseAuthException e) {
-        completer.completeError(e);
-      },
-      codeSent: (String verificationId, int? resendToken) {
-        completer.complete(verificationId);
-      },
-      codeAutoRetrievalTimeout: (String verificationId) {
-        if (!completer.isCompleted) completer.complete(verificationId);
-      },
-    );
+
+    try {
+      await _auth.verifyPhoneNumber(
+        phoneNumber: phoneNumber,
+        verificationCompleted: (fb.PhoneAuthCredential credential) async {
+          debugPrint('[AUTH] Auto-verification completed');
+          try {
+            await _auth.signInWithCredential(credential);
+          } catch (e) {
+            debugPrint('[AUTH] Auto sign-in failed: $e');
+          }
+        },
+        verificationFailed: (fb.FirebaseAuthException e) {
+          debugPrint('[AUTH] Verification failed: ${e.code} - ${e.message}');
+          completer.completeError(e);
+        },
+        codeSent: (String verificationId, int? resendToken) {
+          debugPrint('[AUTH] Code sent, verificationId: $verificationId');
+          completer.complete(verificationId);
+        },
+        codeAutoRetrievalTimeout: (String verificationId) {
+          debugPrint(
+              '[AUTH] Auto-retrieval timeout, verificationId: $verificationId');
+          if (!completer.isCompleted) completer.complete(verificationId);
+        },
+      );
+    } catch (e) {
+      debugPrint('[AUTH] Phone verification setup failed: $e');
+      completer.completeError(e);
+    }
+
     return completer.future;
   }
 
   Future<AppUser?> confirmSmsCode(String verificationId, String smsCode) async {
+    debugPrint(
+        '[AUTH] Confirming SMS code: $smsCode with verificationId: $verificationId');
+
+    // In DEV + emulator mode, accept known code and sign in anonymously
+    const useEmulators =
+        String.fromEnvironment('USE_EMULATORS', defaultValue: 'false');
+    if (useEmulators == 'true' &&
+        kDebugMode &&
+        verificationId == 'simulated-verification-id') {
+      if (smsCode != '123456') {
+        throw fb.FirebaseAuthException(
+            code: 'invalid-verification-code', message: 'Incorrect code');
+      }
+      final anon = await _auth.signInAnonymously();
+      debugPrint(
+          '[AUTH] Simulated OTP accepted; signed in anonymously: ${anon.user?.uid}');
+      // Ensure token readiness before Firestore writes
+      for (var i = 0; i < 6; i++) {
+        try {
+          final token = await anon.user?.getIdToken(false);
+          if (token != null && token.isNotEmpty) break;
+        } catch (_) {}
+        await Future.delayed(const Duration(milliseconds: 500));
+      }
+      return _ensureUserDoc(anon.user!);
+    }
+
     final credential = fb.PhoneAuthProvider.credential(
       verificationId: verificationId,
       smsCode: smsCode,
     );
+
     final cred = await _auth.signInWithCredential(credential);
+    debugPrint(
+        '[AUTH] SMS verification successful for user: ${cred.user?.uid}');
     // Ensure the newly-signed-in user's ID token is minted and available to
     // other Firebase services (Firestore) before we attempt to write the
     // user's document. This avoids a race where the Firestore request
@@ -94,7 +170,8 @@ class AuthService extends ChangeNotifier {
   /// Update user profile fields that are allowed to change after onboarding.
   /// Vehicle fields (carMake/carModel/carPlate) must not be
   /// updated through this method to respect immutability rules.
-  Future<AppUser> updateProfile({String? name, String? email, String? photoUrl}) async {
+  Future<AppUser> updateProfile(
+      {String? name, String? email, String? photoUrl}) async {
     final fbUser = _auth.currentUser;
     if (fbUser == null) throw Exception('Not signed in');
     final ref = _db.collection('users').doc(fbUser.uid);
@@ -116,7 +193,7 @@ class AuthService extends ChangeNotifier {
   Future<String> updatePhoneNumber(String newPhoneNumber) async {
     final fbUser = _auth.currentUser;
     if (fbUser == null) throw Exception('Not signed in');
-    
+
     final completer = Completer<String>();
     await _auth.verifyPhoneNumber(
       phoneNumber: newPhoneNumber,
@@ -143,23 +220,24 @@ class AuthService extends ChangeNotifier {
 
   /// Confirm phone number update with SMS code.
   /// Updates both Firebase Auth and Firestore user document.
-  Future<void> confirmPhoneUpdate(String verificationId, String smsCode, String newPhoneNumber) async {
+  Future<void> confirmPhoneUpdate(
+      String verificationId, String smsCode, String newPhoneNumber) async {
     final fbUser = _auth.currentUser;
     if (fbUser == null) throw Exception('Not signed in');
-    
+
     final credential = fb.PhoneAuthProvider.credential(
       verificationId: verificationId,
       smsCode: smsCode,
     );
-    
+
     // Update phone number in Firebase Auth
     await fbUser.updatePhoneNumber(credential);
-    
+
     // Update Firestore user document
     await _db.collection('users').doc(fbUser.uid).set({
       'phoneNumber': newPhoneNumber,
     }, SetOptions(merge: true));
-    
+
     // Refresh current user data
     final doc = await _db.collection('users').doc(fbUser.uid).get();
     _currentUser = AppUser.fromMap(doc.id, doc.data());
@@ -168,13 +246,14 @@ class AuthService extends ChangeNotifier {
 
   Future<AppUser> _ensureUserDoc(fb.User user) async {
     final ref = _db.collection('users').doc(user.uid);
-    
+
     // First check if the user document already exists
     final existingDoc = await ref.get();
-    
+
     // For returning users, don't overwrite existing data
     // Just ensure the document exists and return it
-    if (existingDoc.exists && existingDoc.data()?['onboardingComplete'] == true) {
+    if (existingDoc.exists &&
+        existingDoc.data()?['onboardingComplete'] == true) {
       // Returning user with completed onboarding - don't overwrite their data
       // Just update phone number if it changed
       if (user.phoneNumber != null) {
@@ -188,23 +267,24 @@ class AuthService extends ChangeNotifier {
       notifyListeners();
       return appUser;
     }
-    
+
     // For new users or users who haven't completed onboarding,
     // initialize/update their document with Firebase Auth data
     final data = <String, dynamic>{};
-    
+
     // Only set fields if they have values (not null)
     if (user.displayName != null) data['name'] = user.displayName;
     if (user.email != null) data['email'] = user.email;
     if (user.phoneNumber != null) data['phoneNumber'] = user.phoneNumber;
     if (user.photoURL != null) data['photoUrl'] = user.photoURL;
-    
+
     // Only set onboardingComplete to false if it doesn't exist
     // This prevents overwriting the flag for returning users
-    if (!existingDoc.exists || existingDoc.data()?['onboardingComplete'] == null) {
+    if (!existingDoc.exists ||
+        existingDoc.data()?['onboardingComplete'] == null) {
       data['onboardingComplete'] = false;
     }
-    
+
     await ref.set(data, SetOptions(merge: true));
     final doc = await ref.get();
     final appUser = AppUser.fromMap(doc.id, doc.data());
@@ -233,26 +313,27 @@ class AuthService extends ChangeNotifier {
       // No-op if onboarding already completed
       return;
     }
-    
+
     // Normalize license plate to uppercase without spaces to match
     // how reports store licensePlate (normalized in ReportService).
     final normalizedPlate = carPlate.toUpperCase().replaceAll(' ', '');
-    
+
     // Check if this license plate is already registered to another user
     final existingPlateQuery = await _db
         .collection('users')
         .where('carPlate', isEqualTo: normalizedPlate)
         .limit(1)
         .get();
-    
+
     if (existingPlateQuery.docs.isNotEmpty) {
       final existingUserId = existingPlateQuery.docs.first.id;
       // Only throw if the plate belongs to a different user
       if (existingUserId != fbUser.uid) {
-        throw Exception('This license plate is already registered. Please verify your plate number.');
+        throw Exception(
+            'This license plate is already registered. Please verify your plate number.');
       }
     }
-    
+
     await ref.set({
       'name': name,
       'carMake': carMake,

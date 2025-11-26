@@ -40,11 +40,10 @@ android {
     }
 
     defaultConfig {
-        // TODO: Specify your own unique Application ID (https://developer.android.com/studio/build/application-id.html).
-    applicationId = "com.techolosh.carletdev"
-        // You can update the following values to match your application needs.
-        // For more information, see: https://flutter.dev/to/review-gradle-config.
-        // minSdk = flutter.minSdkVersion
+        // Application ID set by flavor - see flavorDimensions below
+        // Dev: com.techolosh.carletdev
+        // Prod: com.techolosh.carlet
+        
         minSdk = 27
         targetSdk = flutter.targetSdkVersion
         versionCode = flutter.versionCode
@@ -53,6 +52,22 @@ android {
         // Read Maps API Key from local.properties (not committed to git)
         val mapsApiKey = localProperties.getProperty("MAPS_API_KEY", "")
         manifestPlaceholders["MAPS_API_KEY"] = mapsApiKey
+    }
+    
+    flavorDimensions += "environment"
+    
+    productFlavors {
+        create("dev") {
+            dimension = "environment"
+            applicationId = "com.techolosh.carletdev"
+            resValue("string", "app_name", "Carlet (Dev)")
+        }
+        
+        create("prod") {
+            dimension = "environment"
+            applicationId = "com.techolosh.carlet"
+            resValue("string", "app_name", "Carlet")
+        }
     }
 
     signingConfigs {

@@ -4,25 +4,25 @@ set -euo pipefail
 # Run the Flutter app from the command line with environment flags.
 #
 # Usage examples:
-#   # Default (DEV environment, debug mode, let flutter pick device)
+#   # Default (dev environment, debug mode, let flutter pick device)
 #   ./tools/scripts/run_app.sh
 #
 #   # Run on a specific device (e.g., macos, ios, chrome, emulator id)
 #   ./tools/scripts/run_app.sh --device macos
 #
-#   # Use a different environment and run in release mode
-#   ./tools/scripts/run_app.sh --env STAGING --release
+#   # Run production flavor
+#   ./tools/scripts/run_app.sh --env prod
 #
-#   # Specify a flavor if your project uses flavors
-#   ./tools/scripts/run_app.sh --env PROD --flavor production --device android
+#   # Run production flavor in release mode on specific device
+#   ./tools/scripts/run_app.sh --env prod --release --device ios
 #
-# The script sets a Dart define named APP_ENV (default: DEV) which you can
-# read in Dart via const String.fromEnvironment('APP_ENV'). This approach is
-# intentionally simple and avoids requiring specific flavor setups.
+# The script sets a Dart define named APP_ENV (dev or prod) which you can
+# read in Dart via const String.fromEnvironment('APP_ENV'). The flavor is
+# automatically set to match the environment unless explicitly overridden.
 
 PROGNAME="$(basename "$0")"
 
-DEFAULT_ENV="DEV"
+DEFAULT_ENV="dev"
 DART_DEFINE_NAME="APP_ENV"
 
 show_help() {
@@ -30,15 +30,15 @@ show_help() {
 Usage: $PROGNAME [options]
 
 Options:
-  -e, --env <ENV>       Environment to run (DEV, STAGING, PROD). Default: $DEFAULT_ENV
+  -e, --env <ENV>       Environment to run (dev, prod). Default: $DEFAULT_ENV
   -d, --device <ID>     Flutter device id (e.g. macos, ios, chrome, emulator-5554). Default: none (flutter chooses)
-  -f, --flavor <NAME>   Flutter flavor to use (if your project defines flavors)
+  -f, --flavor <NAME>   Flutter flavor to use (auto-set to match environment if not provided)
   -r, --release         Run in release mode (default: debug)
   -h, --help            Show this help and exit
 
 This script forwards the selected options to 'flutter run' and sets a
 --dart-define $DART_DEFINE_NAME=<ENV> so your Dart code can adapt to the
-chosen environment.
+chosen environment. The flavor is automatically set to match the environment.
 EOF
 }
 
@@ -92,21 +92,19 @@ raw_env="$ENV"
 lc_env="$(echo "$raw_env" | tr '[:upper:]' '[:lower:]' | tr -d '[:space:]')"
 case "$lc_env" in
   dev|development)
-    ENV="DEV" ;;
-  staging|stage|stg|qa)
-    ENV="STAGING" ;;
+    ENV="dev" ;;
   prod|production|prd)
-    ENV="PROD" ;;
+    ENV="prod" ;;
   "")
     ENV="${DEFAULT_ENV}" ;;
   *)
-    # If the input didn't match any alias, normalize to uppercase and validate below
-    ENV="$(echo "$raw_env" | tr '[:lower:]' '[:upper:]' | tr -d '[:space:]')"
+    # If the input didn't match any alias, normalize to lowercase and validate below
+    ENV="$(echo "$raw_env" | tr '[:upper:]' '[:lower:]' | tr -d '[:space:]')"
     ;;
 esac
 
 # Validate allowed environment names to avoid accidental typos.
-allowed_envs=("DEV" "STAGING" "PROD")
+allowed_envs=("dev" "prod")
 valid_env=false
 for v in "${allowed_envs[@]}"; do
   if [[ "$ENV" == "$v" ]]; then
@@ -116,10 +114,16 @@ for v in "${allowed_envs[@]}"; do
 done
 if [[ "$valid_env" != true ]]; then
   echo "[ERR] Unknown environment: '$ENV'"
-  echo "Allowed environments (aliases accepted): dev/development -> DEV, staging/stage -> STAGING, prod/production -> PROD"
+  echo "Allowed environments (aliases accepted): dev/development -> dev, prod/production -> prod"
   echo
   show_help
   exit 1
+fi
+
+# Auto-set flavor to match environment if not explicitly provided
+if [[ -z "$FLAVOR" ]]; then
+  FLAVOR="$ENV"
+  echo "[INFO] Auto-setting flavor to match environment: $FLAVOR"
 fi
 
 echo "Running Flutter app"
@@ -146,18 +150,18 @@ fi
 # Add dart define for environment
 cmd+=( --dart-define "$DART_DEFINE_NAME=$ENV" )
 
-# If running in DEV environment, also enable emulator flag at compile/runtime
+# If running in dev environment, also enable emulator flag at compile/runtime
 # so the Flutter code compiled in this run will see USE_EMULATORS=true.
-if [[ "$ENV" == "DEV" ]]; then
+if [[ "$ENV" == "dev" ]]; then
   cmd+=( --dart-define "USE_EMULATORS=true" )
 fi
 
 # For Android debug builds the Google Services Gradle plugin requires a
-# `google-services.json` to be present. Create a lightweight placeholder
-# under android/app/src/debug/ when running DEV so local emulator/debug
-# builds don't fail the Gradle check. We try to infer projectId and
-# applicationId; fallback to sensible defaults if extraction fails.
-if [[ "$ENV" == "DEV" ]]; then
+# `google-services.json` to be present. With flavors, this is now handled
+# by the flavor-specific directories (android/app/src/dev/ and android/app/src/prod/).
+# This placeholder generation is no longer needed, but kept for backwards compatibility
+# with pre-flavor builds if they still occur.
+if [[ "$ENV" == "dev" ]]; then
   GS_PATH="android/app/src/debug/google-services.json"
   if [[ ! -f "$GS_PATH" ]]; then
   # Try to extract projectId from generated firebase_options.dart (take first match)
@@ -198,7 +202,7 @@ if [[ "$ENV" == "DEV" ]]; then
   "configuration_version": "1"
 }
 EOF
-    echo "[INFO] Created placeholder $GS_PATH for DEV build (project_id=$project_id, app_id=$app_id)"
+    echo "[INFO] Created placeholder $GS_PATH for dev build (project_id=$project_id, app_id=$app_id)"
     CREATED_GS=1
   fi
 fi

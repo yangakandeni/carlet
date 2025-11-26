@@ -109,7 +109,7 @@ This checklist ensures your app is ready for submission to Apple App Store and G
 
 #### 1. Production Environment
 - [ ] Create separate Firebase project for production
-  - Project ID: `carlet-prod-xxxxx` (not `carlet-dev-6be6a`)
+  - Project ID: `carlet-xxxxx` (not `carlet-dev-6be6a`)
   - Separate iOS app: `com.techolosh.carlet` (remove "dev")
   - Separate Android app: `com.techolosh.carlet`
 - [ ] Run `flutterfire configure` for production project

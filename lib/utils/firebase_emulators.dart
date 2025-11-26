@@ -3,49 +3,63 @@ import 'dart:io' show Platform;
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_storage/firebase_storage.dart';
-import 'package:flutter/foundation.dart' show kDebugMode, debugPrint;
+import 'package:flutter/foundation.dart' show debugPrint;
 
-// Compile-time flags:
-// - USE_EMULATORS=true to explicitly enable emulator connections
-// - EMULATOR_HOST=<host> to override default host (localhost/10.0.2.2)
-// - APP_ENV=<ENV> can be used to select environment (DEV/STAGING/PROD)
-const bool kUseEmulators =
-  bool.fromEnvironment('USE_EMULATORS', defaultValue: false);
-const String kEmulatorHostEnv =
-  String.fromEnvironment('EMULATOR_HOST', defaultValue: '');
-const String kAppEnv = String.fromEnvironment('APP_ENV', defaultValue: '');
+import 'package:carlet/env/env.dart';
 
-// Decide whether to use emulators:
-// - If USE_EMULATORS was compiled-in true, honor that.
-// - If APP_ENV is set to DEV (via --dart-define APP_ENV=DEV) use emulators.
-// - If the app is running in debug mode (kDebugMode), use emulators.
-// This makes local development (debug runs or `APP_ENV=DEV`) automatically
-// connect to emulators while allowing explicit overrides via USE_EMULATORS.
-final bool kShouldUseEmulators = kUseEmulators ||
-  kAppEnv.toUpperCase() == 'DEV' ||
-  kDebugMode;
+// Emulator connection is now controlled by Env.useEmulators
+// which checks:
+// - APP_ENV=dev (required)
+// - kDebugMode=true (required)
+// - USE_EMULATORS=true (optional explicit flag)
+//
+// This ensures production builds never connect to emulators.
 
 String _defaultHost() {
   // On Android emulators, the host machine is 10.0.2.2
   if (Platform.isAndroid) return '10.0.2.2';
   // iOS simulator/macOS/web can use localhost
+  // Physical iOS devices need the Mac's IP address (set via EMULATOR_HOST)
   return 'localhost';
 }
 
-String get emulatorHost =>
-    (kEmulatorHostEnv.isNotEmpty) ? kEmulatorHostEnv : _defaultHost();
+bool _isPhysicalIOSDevice() {
+  // Physical iOS devices can't connect to localhost emulators
+  // They need the Mac's IP address set via --dart-define EMULATOR_HOST=<ip>
+  return Platform.isIOS &&
+      !Platform.environment.containsKey('SIMULATOR_DEVICE_NAME');
+}
+
+String get emulatorHost {
+  const envHost = String.fromEnvironment('EMULATOR_HOST', defaultValue: '');
+  return envHost.isNotEmpty ? envHost : _defaultHost();
+}
 
 bool _connected = false;
 
 Future<void> connectToFirebaseEmulators() async {
-  debugPrint('[EMULATOR] USE_EMULATORS=$kUseEmulators, APP_ENV=$kAppEnv, kDebugMode=$kDebugMode, HOST=$emulatorHost');
-
-  if (_connected || !kShouldUseEmulators) {
-    if (!kShouldUseEmulators) {
-      debugPrint('[EMULATOR] Emulators disabled - using production Firebase');
+  if (_connected || !Env.useEmulators) {
+    if (!Env.useEmulators) {
+      debugPrint(
+          '[EMULATOR] Emulators disabled - using ${Env.isProd ? 'PRODUCTION' : 'DEVELOPMENT'} Firebase');
     }
     return;
   }
+
+  // Physical iOS devices can't connect to localhost emulators
+  // Skip emulator connection and use live Firebase instead
+  if (_isPhysicalIOSDevice()) {
+    const emulatorHost =
+        String.fromEnvironment('EMULATOR_HOST', defaultValue: '');
+    if (emulatorHost.isEmpty) {
+      debugPrint(
+          '[EMULATOR] Skipping emulators on physical iOS device (use live dev Firebase)');
+      debugPrint(
+          '[EMULATOR] To use emulators, set --dart-define EMULATOR_HOST=<your-mac-ip>');
+      return;
+    }
+  }
+
   final host = emulatorHost;
 
   debugPrint('[EMULATOR] Connecting to Firebase Emulators at $host...');

@@ -9,7 +9,7 @@ import 'package:provider/provider.dart';
 import 'package:carlet/services/auth_service.dart';
 import 'package:carlet/services/messaging_service.dart';
 import 'package:carlet/app.dart';
-import 'package:carlet/firebase_options.dart';
+import 'package:carlet/env/env.dart';
 import 'package:carlet/utils/firebase_emulators.dart';
 
 // Top-level background handler for FCM
@@ -21,7 +21,7 @@ Future<void> firebaseMessagingBackgroundHandler(RemoteMessage message) async {
   // Initialize Firebase with error handling for duplicate app
   try {
     await Firebase.initializeApp(
-      options: DefaultFirebaseOptions.currentPlatform,
+      options: Env.firebaseOptions,
     );
   } catch (e) {
     if (e.toString().contains('duplicate-app')) {
@@ -32,17 +32,20 @@ Future<void> firebaseMessagingBackgroundHandler(RemoteMessage message) async {
     }
   }
 
-  // If compiled with --dart-define=USE_EMULATORS=true, connect to local emulators
+  // Connect to emulators only in dev environment
   await connectToFirebaseEmulators();
 }
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
+  // Log environment configuration
+  Env.logEnvironment();
+
   // Initialize Firebase with error handling for duplicate app
   try {
     await Firebase.initializeApp(
-      options: DefaultFirebaseOptions.currentPlatform,
+      options: Env.firebaseOptions,
     );
   } catch (e) {
     if (e.toString().contains('duplicate-app')) {
@@ -53,7 +56,7 @@ Future<void> main() async {
     }
   }
 
-  // Connect to Firebase Emulators if USE_EMULATORS=true
+  // Connect to Firebase Emulators only in dev environment
   await connectToFirebaseEmulators();
 
   FirebaseMessaging.onBackgroundMessage(firebaseMessagingBackgroundHandler);

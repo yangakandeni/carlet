@@ -82,7 +82,7 @@ See `docs/ANDROID_RELEASE_SIGNING.md` for exact code to add.
 # Step 1: Create new Firebase project
 open https://console.firebase.google.com/
 
-# Project name: carlet-production (or carlet-prod)
+# Project name: carlet-production (or carlet)
 # NOT: carlet-dev-6be6a (that's your dev project)
 
 # Step 2: Add iOS app
