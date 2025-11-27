@@ -19,32 +19,12 @@ class AuthService extends ChangeNotifier {
   AuthService() {
     _auth = fb.FirebaseAuth.instance;
     _db = FirebaseFirestore.instance;
-    _configureAuthForEmulator();
     _authSub = _auth.authStateChanges().listen(_onAuthChanged);
   }
 
   // Named constructor for tests that avoids subscribing to Firebase auth
   // streams on construction and doesn't initialize Firebase instances.
   AuthService.noInit();
-
-  /// Configure Firebase Auth for emulator environment, especially iOS simulator
-  void _configureAuthForEmulator() {
-    // Check if we're in emulator mode
-    const useEmulators =
-        String.fromEnvironment('USE_EMULATORS', defaultValue: 'false');
-    if (useEmulators == 'true' && kDebugMode) {
-      // Configure Firebase Auth for testing with known test phone numbers
-      try {
-        _auth.setSettings(
-          appVerificationDisabledForTesting: true,
-        );
-        debugPrint(
-            '[AUTH] Configured Firebase Auth for emulator with test phone verification');
-      } catch (e) {
-        debugPrint('[AUTH] Could not configure auth settings: $e');
-      }
-    }
-  }
 
   Future<void> _onAuthChanged(fb.User? user) async {
     _userDocSub?.cancel();
@@ -66,14 +46,9 @@ class AuthService extends ChangeNotifier {
   Future<String> startPhoneVerification(String phoneNumber) async {
     debugPrint('[AUTH] Starting phone verification for: $phoneNumber');
 
-    // In DEV + emulator mode, simulate OTP to avoid iOS simulator crash
-    const useEmulators =
-        String.fromEnvironment('USE_EMULATORS', defaultValue: 'false');
-    if (useEmulators == 'true' && kDebugMode) {
-      debugPrint(
-          '[AUTH] Emulator mode – using simulated OTP flow (code=123456)');
-      return 'simulated-verification-id';
-    }
+    // Use real Firebase Auth (no simulation) - works on all devices
+    // Physical iOS devices will receive real SMS
+    // iOS simulator may have issues, but physical devices work fine
 
     final completer = Completer<String>();
 
@@ -114,30 +89,7 @@ class AuthService extends ChangeNotifier {
     debugPrint(
         '[AUTH] Confirming SMS code: $smsCode with verificationId: $verificationId');
 
-    // In DEV + emulator mode, accept known code and sign in anonymously
-    const useEmulators =
-        String.fromEnvironment('USE_EMULATORS', defaultValue: 'false');
-    if (useEmulators == 'true' &&
-        kDebugMode &&
-        verificationId == 'simulated-verification-id') {
-      if (smsCode != '123456') {
-        throw fb.FirebaseAuthException(
-            code: 'invalid-verification-code', message: 'Incorrect code');
-      }
-      final anon = await _auth.signInAnonymously();
-      debugPrint(
-          '[AUTH] Simulated OTP accepted; signed in anonymously: ${anon.user?.uid}');
-      // Ensure token readiness before Firestore writes
-      for (var i = 0; i < 6; i++) {
-        try {
-          final token = await anon.user?.getIdToken(false);
-          if (token != null && token.isNotEmpty) break;
-        } catch (_) {}
-        await Future.delayed(const Duration(milliseconds: 500));
-      }
-      return _ensureUserDoc(anon.user!);
-    }
-
+    // Use real Firebase Auth credential verification
     final credential = fb.PhoneAuthProvider.credential(
       verificationId: verificationId,
       smsCode: smsCode,
