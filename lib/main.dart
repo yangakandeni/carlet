@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:firebase_core/firebase_core.dart';
+import 'package:firebase_app_check/firebase_app_check.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -54,6 +55,24 @@ Future<void> main() async {
     } else {
       rethrow;
     }
+  }
+
+  // Initialize Firebase App Check
+  // Use debug provider in dev, deviceCheck/appAttest in production
+  if (Env.isDev) {
+    // Development: use debug provider for testing
+    await FirebaseAppCheck.instance.activate(
+      appleProvider: AppleProvider.debug,
+      androidProvider: AndroidProvider.debug,
+    );
+    debugPrint('[AppCheck] Firebase App Check activated (DEBUG mode)');
+  } else {
+    // Production: use platform-specific secure providers
+    await FirebaseAppCheck.instance.activate(
+      appleProvider: AppleProvider.deviceCheck,
+      androidProvider: AndroidProvider.playIntegrity,
+    );
+    debugPrint('[AppCheck] Firebase App Check activated (PRODUCTION mode)');
   }
 
   // Connect to Firebase Emulators only in dev environment

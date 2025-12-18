@@ -1,7 +1,7 @@
 plugins {
     id("com.android.application")
     // START: FlutterFire Configuration
-    id("com.google.gms.google-services")
+    // Note: Google Services plugin must be applied after the Flutter plugin.
     // END: FlutterFire Configuration
     id("kotlin-android")
     // The Flutter Gradle Plugin must be applied after the Android and Kotlin Gradle plugins.
@@ -99,4 +99,30 @@ android {
 
 flutter {
     source = "../.."
+}
+
+// Apply Google Services plugin after the Flutter Gradle plugin to ensure proper ordering
+apply(plugin = "com.google.gms.google-services")
+
+// When product flavors exist, Gradle produces flavor-specific APK names
+// (e.g. app-dev-debug.apk). The Flutter tool expects `app-debug.apk` when no
+// flavor is provided. Create a small task to copy the most likely debug APK
+// to `app-debug.apk` so `flutter run` without `--flavor` works during development.
+val copyDebugApk = tasks.register("copyDebugApk") {
+    doLast {
+        val outputsDir = file("$buildDir/outputs/flutter-apk")
+        val devApk = file("${outputsDir.path}/app-dev-debug.apk")
+        val prodApk = file("${outputsDir.path}/app-prod-debug.apk")
+        val target = file("${outputsDir.path}/app-debug.apk")
+        if (devApk.exists()) {
+            devApk.copyTo(target, overwrite = true)
+        } else if (prodApk.exists()) {
+            prodApk.copyTo(target, overwrite = true)
+        }
+    }
+}
+
+// Attach the copy task to any assemble*Debug task (flavored or unflavored)
+tasks.matching { it.name.startsWith("assemble") && it.name.endsWith("Debug") }.all {
+    finalizedBy(copyDebugApk)
 }

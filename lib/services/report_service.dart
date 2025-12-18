@@ -31,7 +31,19 @@ class ReportService {
     if (file == null) return null;
     // Use refFromURL for emulators or ref() for production
     final ref = _storage.ref('reports/$reportId/photo.jpg');
-    final task = await ref.putFile(file);
+
+    // Attach content-type metadata so Storage security rules that require
+    // image/* content types will allow the upload.
+    String contentType = 'image/jpeg';
+    final lower = file.path.toLowerCase();
+    if (lower.endsWith('.png')) {
+      contentType = 'image/png';
+    } else if (lower.endsWith('.gif'))
+      contentType = 'image/gif';
+    else if (lower.endsWith('.webp')) contentType = 'image/webp';
+
+    final metadata = SettableMetadata(contentType: contentType);
+    final task = await ref.putFile(file, metadata);
     return await task.ref.getDownloadURL();
   }
 
